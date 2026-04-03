@@ -1,0 +1,14 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<SelectDialog noDataText="{i18n>noMaterialFound}" title="{i18n>listMaterial}" search="onSearchF4Value" confirm="onAddMaterial"
+		multiSelect="true" items="{ path: 'F4DropdownMRF>/zmmm_i_helpmatnr' }">
+		<items>
+			<StandardListItem title="{F4DropdownMRF>maktx}" description="{F4DropdownMRF>matnr}" type="Active"/>
+		</items>
+		<customData>
+			<core:CustomData key="search_field" value="matnr"/>
+			<core:CustomData key="search_field_desc" value="maktx"/>
+			<core:CustomData key="search_field_filter" value="werks"/>
+			<core:CustomData key="search_field_filter_commodity" value="commodity"/>
+		</customData>
+	</SelectDialog>
+</core:FragmentDefinition>

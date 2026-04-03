@@ -1,0 +1,25 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:u="sap.ui.unified">
+	<List id="idAttachmentList" delete="onFileDeleted" mode="{=${viewConfig>/editable} ? 'Delete' : 'None'}" headerText="Products" items="{editMRF>NavTo_MRFHeader_Attachment}" class="sapUiSmallMarginBottom">
+		<headerToolbar>
+			<OverflowToolbar>
+				<Text text="{i18n>attachmentTxt}"/>
+				<ToolbarSpacer/>
+				<u:FileUploader enabled="{=${viewConfig>/editable} &amp;&amp; ${editMRF>NavTo_MRFHeader_Attachment}.length &lt;5}" icon="sap-icon://upload" typeMissmatch="onTypeMissmatch"
+					fileType="xlsx,xls,doc,docx,png,pdf,jpg,jpeg,zip" buttonOnly="true" change="onFileSelect" fileSizeExceed="onFileSizeExceed" maximumFileSize="5"
+					multiple="false" iconOnly="false" sameFilenameAllowed="true" buttonText="{i18n>uploadFile}"></u:FileUploader>
+			</OverflowToolbar>
+		</headerToolbar>
+		<items>
+			<CustomListItem>
+				<HBox>
+					<core:Icon size="2rem" src="{editMRF>Icon}" class="sapMUCItemIcon sapUiSmallMarginBegin sapUiSmallMarginTopBottom"/>
+					<VBox class="sapUiSmallMarginBegin sapUiSmallMarginTopBottom">
+						<Text text="{editMRF>FileName}" visible="{viewConfig>/editable}"/>
+						<Link text="{editMRF>FileName}" press="onOpenAttachment" visible="{=!${viewConfig>/editable}}"/>
+						<Label text="{i18n>fileSize} {path: 'editMRF>FileSize'}"/>
+					</VBox>
+				</HBox>
+			</CustomListItem>
+		</items>
+	</List>
+</core:FragmentDefinition>

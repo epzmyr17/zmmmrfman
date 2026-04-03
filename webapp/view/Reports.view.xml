@@ -1,0 +1,199 @@
+<mvc:View controllerName="com.globe.MRF_Manage.controller.Reports" xmlns:mvc="sap.ui.core.mvc" xmlns:fb="sap.ui.comp.filterbar"
+	xmlns:vm="sap.ui.comp.variants" xmlns:f="sap.f" displayBlock="true" xmlns:core="sap.ui.core" xmlns:sv="sap.ui.comp.smartvariants"
+	xmlns:uxap="sap.uxap" xmlns:layout="sap.ui.layout" xmlns="sap.m" xmlns:smartTable="sap.ui.comp.smarttable">
+	<f:DynamicPage id="dynamicPageId" class="sapUiNoContentPadding">
+		<f:title>
+			<f:DynamicPageTitle>
+				<f:heading>
+					<Title text="{i18n>myRequest}"/>
+				</f:heading>
+				<f:actions></f:actions>
+				<f:navigationActions>
+					<Button type="Transparent" text="{i18n>clearFilter}" press="onClearFilter"/>
+					<Button type="Emphasized" text="{i18n>newRequest}" press="onPressAddMRF" class="sapUiSmallMarginEnd"/>
+				</f:navigationActions>
+			</f:DynamicPageTitle>
+		</f:title>
+		<f:header>
+			<f:DynamicPageHeader pinnable="true" class="mrf-dynamic-page-header">
+				<f:content>
+					<fb:FilterBar reset="onReset" search="onSearch" showFilterConfiguration="false" useToolbar="false" showRestoreButton="false"
+						showClearButton="false" showGoOnFB="false">
+						<fb:filterItems>
+							<fb:FilterItem name="A" label="{i18n>referenceNo}">
+								<fb:control>
+									<SearchField search="onChangeFilterBar" value="{ReportFilter>refNo}"/>
+								</fb:control>
+							</fb:FilterItem>
+							<fb:FilterItem name="B" label="{i18n>requestDate}">
+								<fb:control>
+									<DateRangeSelection class="mrf-daterange-input-disable" dateValue="{ReportFilter>fromDate}" secondDateValue="{ReportFilter>toDate}"
+										change="onChangeFilterBar"/>
+								</fb:control>
+							</fb:FilterItem>
+							<fb:FilterItem name="C" label="{i18n>commodity}">
+								<fb:control>
+									<Select change="onChangeFilterBar" forceSelection="false" items="{ path: 'F4DropdownMRF>/ZMMM_I_HELP_ATWRT' }"
+										selectedKey="{ReportFilter>commodity}">
+										<core:Item text="{F4DropdownMRF>Commodity}" key="{F4DropdownMRF>Commodity}"/>
+									</Select>
+								</fb:control>
+							</fb:FilterItem>
+							<fb:FilterItem name="D" label="{i18n>status}">
+								<fb:control>
+									<Select id="idSelectStatus" change="onChangeFilterBar" forceSelection="false" items="{ path: 'F4DropdownMRF>/StatusSet' }"
+										selectedKey="{ReportFilter>status}">
+										<core:Item text="{F4DropdownMRF>RecordStatus}" key="{F4DropdownMRF>RecordStatus}"/>
+									</Select>
+								</fb:control>
+							</fb:FilterItem>
+						</fb:filterItems>
+					</fb:FilterBar>
+					<IconTabBar id="idIconTabFilter" select="onSelectTabStatus" showOverflowSelectList="true" headerMode="Inline" upperCase="false"
+						expanded="true" expandable="false" applyContentPadding="false" class="mrf-icon-tab-no-margin mrf-icon-tab-no-border-bottom"
+						items="{ path: '/ActionsSet' }">
+						<items>
+							<IconTabFilter text="{Desc}" count="{Count}" key="{Desc}"/>
+						</items>
+					</IconTabBar>
+				</f:content>
+			</f:DynamicPageHeader>
+		</f:header>
+		<f:content>
+			<VBox>
+				<Table id="idSmartTableReport" inset="false" updateFinished="onUpdateFinished" mode="None"
+					items="{ path: '/MRFHeaderSet', events: {dataReceived: '.onDataReceivedTable'}, sorter: { path: 'CreatedOn', descending : true }, parameters:{expand: 'NavTo_MRFHeader_Items'} }"
+					growing="true">
+					<headerToolbar>
+						<OverflowToolbar design="Transparent">
+							<Title titleStyle="Auto" level="Auto" text="{i18n>lineItem} ({viewConfig>/lineItemCount})"/>
+							<ToolbarSpacer/>
+							<Button type="Transparent" icon="sap-icon://sort" text="{i18n>sortByDate}" press="onClickSort" enabled="{viewConfig>/editable}"/>
+							<Button type="Transparent" icon="sap-icon://excel-attachment" text="{i18n>exportToExcel}" press="onPressExport"
+								enabled="{viewConfig>/editable}"/>
+						</OverflowToolbar>
+					</headerToolbar>
+					<columns>
+						<Column>
+							<Text text="{i18n>referenceNo}"/>
+						</Column>
+						<Column minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+							<Text text="{i18n>commodity}"/>
+						</Column>
+						<Column minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+							<Text text="{i18n>dateCreated}"/>
+						</Column>
+						<Column minScreenWidth="Tablet" demandPopin="true" hAlign="End" popinDisplay="Inline">
+							<Text text="{i18n>daysElapsed}"/>
+						</Column>
+						<Column minScreenWidth="Tablet" demandPopin="true" hAlign="End" popinDisplay="Inline">
+							<Text text="{i18n>totalWithCurrency}"/>
+						</Column>
+						<Column minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+							<Text text="{i18n>status}"/>
+						</Column>
+					</columns>
+					<items>
+						<ColumnListItem type="Navigation" press="onPressMRFRequest">
+							<cells>
+								<Link text="{Recnum}" press="onPressMRFRequest"/>
+								<Text text="{Atwrt}"/>
+								<Text text="{path: 'CreatedOn', type: 'sap.ui.model.type.Date', formatOptions:{pattern: 'MMM dd, yyyy', UTC: true, strictParsing: true}}"/>
+								<Text text="{DaysElapsed}"/>
+								<Text text="{path: 'Amount', type:'sap.ui.model.odata.type.Decimal', constraints: {scale: 2}}"/>
+								<ObjectStatus state="{path: 'Status', formatter: '.formatter.formatRequestStatus'}" text="{Status}"/>
+							</cells>
+						</ColumnListItem>
+					</items>
+				</Table>
+			</VBox>
+		</f:content>
+	</f:DynamicPage>
+	<!--<ObjectPageLayout showTitleInHeaderContent="true" showEditHeaderButton="false" useIconTabBar="true" alwaysShowContentHeader="true"-->
+	<!--	upperCaseAnchorBar="false">-->
+	<!--	<headerTitle>-->
+	<!--		<ObjectPageHeader objectTitle="{i18n>myRequest}" isObjectIconAlwaysVisible="false" isObjectTitleAlwaysVisible="false"-->
+	<!--			isObjectSubtitleAlwaysVisible="false">-->
+	<!--			<actions>-->
+	<!--				<m:Button type="Emphasized" text="{i18n>newRequest}" press="onPressAddMRF" class="sapUiSmallMarginEnd"/>-->
+	<!--			</actions>-->
+	<!--		</ObjectPageHeader>-->
+	<!--	</headerTitle>-->
+	<!--	<headerContent>-->
+	<!--		<layout:VerticalLayout>-->
+	<!--			<m:Link text="+33 6 4512 5158"/>-->
+	<!--			<m:Link text="DeniseSmith@sap.com"/>-->
+	<!--		</layout:VerticalLayout>-->
+	<!--		<layout:HorizontalLayout>-->
+	<!--			<m:Image src="./test-resources/sap/uxap/images/linkedin.png"></m:Image>-->
+	<!--			<m:Image src="./test-resources/sap/uxap/images/Twitter.png"></m:Image>-->
+	<!--		</layout:HorizontalLayout>-->
+	<!--		<layout:VerticalLayout>-->
+	<!--			<m:Label text="Hello! I am Tim and I use UxAP"/>-->
+	<!--			<m:VBox height="63px">-->
+	<!--				<m:Label text="Achieved goals"/>-->
+	<!--				<m:ProgressIndicator percentValue="30" displayValue="30%" showValue="true" state="None"/>-->
+	<!--			</m:VBox>-->
+	<!--		</layout:VerticalLayout>-->
+	<!--		<layout:VerticalLayout>-->
+	<!--			<m:Label text="San Jose, USA"/>-->
+	<!--		</layout:VerticalLayout>-->
+	<!--		<layout:VerticalLayout>-->
+	<!--			<fb:FilterBar reset="onReset" search="onSearch" showFilterConfiguration="false" useToolbar="false" showRestoreButton="false"-->
+	<!--				showClearButton="false" showGoOnFB="false">-->
+	<!--				<fb:filterItems>-->
+	<!--					<fb:FilterItem name="A" label="Date">-->
+	<!--						<fb:control>-->
+	<!--							<m:DatePicker/>-->
+	<!--						</fb:control>-->
+	<!--					</fb:FilterItem>-->
+	<!--					<fb:FilterItem name="B" label="{i18n>commodity}">-->
+	<!--						<fb:control>-->
+	<!--							<m:Select change="onSelectChange" forceSelection="false" items="{ path: 'F4DropdownMRF>/ZMMM_I_HELP_ATWRT' }">-->
+	<!--								<core:Item text="{F4DropdownMRF>Commodity}" key="{F4DropdownMRF>Atzhl}"/>-->
+	<!--							</m:Select>-->
+	<!--						</fb:control>-->
+	<!--					</fb:FilterItem>-->
+	<!--					<fb:FilterItem name="C" label="{i18n>status}">-->
+	<!--						<fb:control>-->
+	<!--							<m:Select id="slSupplierName" change="onSelectChange" forceSelection="true" items="{ path: '/ProductSuppliers' }">-->
+	<!--								<core:Item key="{key}" text="{name}"/>-->
+	<!--							</m:Select>-->
+	<!--						</fb:control>-->
+	<!--					</fb:FilterItem>-->
+	<!--				</fb:filterItems>-->
+	<!--			</fb:FilterBar>-->
+	<!--		</layout:VerticalLayout>-->
+	<!--	</headerContent>-->
+	<!--	<sections>-->
+	<!--		<ObjectPageSection id="goalsSection" title="For Actions">-->
+	<!--			<subSections>-->
+	<!--				<ObjectPageSubSection title=" ">-->
+	<!--					<m:Button text="Test"/>-->
+	<!--				</ObjectPageSubSection>-->
+	<!--			</subSections>-->
+	<!--		</ObjectPageSection>-->
+	<!--		<ObjectPageSection title="For Approval (10)">-->
+	<!--			<subSections>-->
+	<!--				<ObjectPageSubSection title=" ">-->
+	<!--					<m:Button text="Test"/>-->
+	<!--				</ObjectPageSubSection>-->
+	<!--			</subSections>-->
+	<!--		</ObjectPageSection>-->
+	<!--		<ObjectPageSection title="For processing">-->
+	<!--			<subSections>-->
+	<!--				<ObjectPageSubSection title=" ">-->
+	<!--					<m:Button text="Test"/>-->
+	<!--				</ObjectPageSubSection>-->
+	<!--			</subSections>-->
+	<!--		</ObjectPageSection>-->
+	<!--		<ObjectPageSection title="History">-->
+	<!--			<subSections>-->
+	<!--				<ObjectPageSubSection title=" ">-->
+	<!--					<m:Button text="Test"/>-->
+	<!--				</ObjectPageSubSection>-->
+	<!--			</subSections>-->
+	<!--		</ObjectPageSection>-->
+	<!--	</sections>-->
+	<!--</ObjectPageLayout>-->
+</mvc:View>

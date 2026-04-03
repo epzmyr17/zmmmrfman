@@ -1,0 +1,67 @@
+<mvc:View xmlns:mvc="sap.ui.core.mvc" xmlns="sap.m" xmlns:core="sap.ui.core" controllerName="com.globe.MRF_Manage.controller.CreateMRF">
+	<NavContainer id="idNavContainer">
+		<pages>
+			<Page id="idPageCreate" title="{i18n>createMRF}" busy="{viewConfig>/busy}" busyIndicatorDelay="{viewConfig>/busyDelay}">
+				<content>
+					<Wizard id="idWizard" complete="onWizardReview">
+						<!-- Wizard Step No. 1 : Material -->
+						<WizardStep id="idStepMaterials" title="{i18n>material}" validated="false">
+							<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.CreateMRF.Material" type="XML"/>
+						</WizardStep>
+						<!-- Wizard Step No. 2 : Request Details -->
+						<!--<WizardStep id="idStepTwo" title="{i18n>material}" validated="{=${createMRF>/selectedMaterial}.length>0}"/>-->
+						<WizardStep id="idStepReqDetails" title="{i18n>requestDetails}" validated="false">
+							<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.CreateMRF.RequestDetails" type="XML"/>
+						</WizardStep>
+						<!-- Wizard Step No. 3 : Attachment -->
+						<WizardStep id="idStepAttachment" title="{i18n>uploadFile}" validated="true">
+							<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.CreateMRF.Attachment" type="XML"/>
+						</WizardStep>
+						<!-- Wizard Step No. 4 : Approvers -->
+						<WizardStep id="idStepApprover" title="{i18n>addApprovers}" validated="false">
+							<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.CreateMRF.Approver" type="XML"/>
+						</WizardStep>
+					</Wizard>
+				</content>
+				<footer>
+					<Toolbar>
+						<Button icon="sap-icon://alert" text="{= ${message>/}.length }" visible="{= ${message>/}.length > 0 }" type="Emphasized"
+							press="onOpenMsgManager"/>
+						<ToolbarSpacer/>
+						<Button text="{i18n>cancel}" press="onCancelCreate" type="Default"/>
+						<Button text="{i18n>saveDraft}" press="onSaveRecord"
+							enabled="{=${createMRF>Atwrt} !== '' &amp;&amp; ${createMRF>Werks} !== '' &amp;&amp; ${message>/}.length &lt;= 0}">
+							<customData>
+								<core:CustomData key="action_type" value="Draft"/>
+							</customData>
+						</Button>
+					</Toolbar>
+				</footer>
+			</Page>
+			<!-- Review Section -->
+			<Page id="idPageReview" showHeader="false">
+				<content>
+					<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.CreateMRF.Review" type="XML"/>
+				</content>
+				<footer>
+					<Toolbar>
+						<Button icon="sap-icon://alert" text="{= ${message>/}.length }" visible="{= ${message>/}.length > 0 }" type="Emphasized"
+							press="onOpenMsgManager"/>
+						<ToolbarSpacer/>
+						<Button text="{i18n>cancel}" press="onCancelCreate" type="Default"/>
+						<Button text="{i18n>saveDraft}" press="onSaveRecord">
+							<customData>
+								<core:CustomData key="action_type" value="Draft"/>
+							</customData>
+						</Button>
+						<Button text="{i18n>submit}" press="onSaveRecord" type="Emphasized">
+							<customData>
+								<core:CustomData key="action_type" value="Submit"/>
+							</customData>
+						</Button>
+					</Toolbar>
+				</footer>
+			</Page>
+		</pages>
+	</NavContainer>
+</mvc:View>

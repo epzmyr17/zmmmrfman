@@ -1,0 +1,77 @@
+[{
+	"Recnum": "MRF-89001-CD01",
+	"Purpose": "FS",
+	"Justification": "Need to request for a Devices",
+	"Delivmode": "VP",
+	"Delivaddress": "11 Catanduaness St. West Avenue Quezon City",
+	"Contactperson": "Erica Joi Ang",
+	"Contactnumber": "09154937205",
+	"Chargeto": "OPEX",
+	"Wbs": "4 M/STORE-SL-RS-0048-OH",
+	"Opex": "IO",
+	"Kostl": "BB10",
+	"Aufnr": "1001343",
+	"Subsidy": "",
+	"Instructions": "Please delivery on time",
+	"Status": "For Actions",
+	"Currentagent": "Z28091",
+	"Requestor": "Takao Baltazar",
+	"Reservation": "",
+	"PoNumber": "",
+	"ChangedOn": "/Date(1264150741000)/",
+	"TimeChanged": "PT11H45M0S",
+	"ChangedBy": "ChangedBy 2",
+	"CreatedOn": "/Date(1509181141000)/",
+	"TimeCreated": "PT19H56M47S",
+	"CreatedBy": "VE210015",
+	"Amount": 416.31,
+	"DaysElapsed": 416,
+	"MsgRecnum": "MsgRecnum 2",
+	"Werks": "1000",
+	"Atwrt": "DEVICES",
+	"MsgV1": "MsgV1 2",
+	"MsgV2": "MsgV2 2",
+	"MsgType": "MsgType 2",
+	"PlantDesc": "Globe Telecom Plant",
+	"Saknr": "943002",
+	"SaknrDesc": "Google licenses",
+	"WbsDesc": "2014 GT Store",
+	"KostlDesc": "David Financial Mgt & Cost Transformatio",
+	"OpexDesc": "IO number",
+	"SubsidyDesc": "",
+	"PurposeDesc": "For Sponsorship",
+	"ChargeToDesc": "Opex",
+	"DelivModeDesc": "Virtual Post",
+	"OrderDesc": "",
+	"Email": "takaobaltazar@gmail.com",
+	"OthContPerson": true,
+	"OthContName": "Erica Joi Ang",
+	"OthContNumber": "09154937206",
+	"OthEmail": "ericajoiang@gmail.com",
+	"IsMultiple": false,
+	"Notes": "Please approve the request immediately",
+	"StatusId": "02",
+	"RequestorUrl": "RequestorUrl 2",
+	"ApproverUrl": "ApproverUrl 2",
+	"ReportUrl": "ReportUrl 2",
+	"UserDecision": "UserDecision 2",
+	"__metadata": {
+		"uri": "MRFHeaderSet('MRF-89001-CD01')",
+		"type": "ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader"
+	},
+	"NavTo_MRFHeader_Approver": {
+		"__deferred": {
+			"uri": "MRFHeaderSet('MRF-89001-CD01')/NavTo_MRFHeader_Approver"
+		}
+	},
+	"NavTo_MRFHeader_Items": {
+		"__deferred": {
+			"uri": "MRFHeaderSet('MRF-89001-CD01')/NavTo_MRFHeader_Items"
+		}
+	},
+	"NavTo_MRFHeader_Attachment": {
+		"__deferred": {
+			"uri": "MRFHeaderSet('MRF-89001-CD01')/NavTo_MRFHeader_Attachment"
+		}
+	}
+}]

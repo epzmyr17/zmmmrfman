@@ -1,0 +1,13 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+	<f:SimpleForm id="idSimpleFormNotes" editable="true" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="12"
+		labelSpanS="12" adjustLabelSpan="false" emptySpanXL="2" emptySpanL="2" emptySpanM="4" emptySpanS="0" columnsXL="2" columnsL="2" columnsM="1"
+		singleContainerFullSize="false">
+		<f:content>
+			<Toolbar>
+				<Title text="{i18n>notesDetails}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Label text="{i18n>remarks}" required="false"/>
+			<Text text="{= ${Notes}.trim() === '' ? ${i18n>naText} : ${Notes}}"/>
+		</f:content>
+	</f:SimpleForm>
+</core:FragmentDefinition>

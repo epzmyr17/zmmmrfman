@@ -1,0 +1,14 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<SelectDialog noDataText="{i18n>noApprovers}" title="{i18n>listOfApprovers}" search="onSearchF4ValueApprover" confirm="onAddApproverEmail"
+		multiSelect="false" items="{ path: 'F4DropdownMRF>/ListApproverSet' }">
+		<items>
+			<StandardListItem title="{F4DropdownMRF>SmtpAddr}" description="{F4DropdownMRF>NameFirst} {F4DropdownMRF>NameLast}" type="Active"/>
+		</items>
+		<customData>
+			<core:CustomData key="search_field" value="SmtpAddr"/>
+			<core:CustomData key="search_field_desc1" value="NameFirst"/>
+			<core:CustomData key="search_field_desc2" value="NameLast"/>
+			<core:CustomData key="search_field_filter" value="ApproverType"/>
+		</customData>
+	</SelectDialog>
+</core:FragmentDefinition>

@@ -1,0 +1,42 @@
+[{
+	"Recnum": "MRF-89001-CD01",
+	"Linenum": "001",
+	"Zlevel": "1",
+	"Sapid": "VE210015",
+	"Email": "takao.baltazar@globe.com.ph",
+	"Name": "Takao Baltazar",
+	"Apvtype": "IS_APPROVER",
+	"Status": "",
+	"Editable": "false"
+}, {
+	"Recnum": "MRF-89001-CD01",
+	"Linenum": "002",
+	"Zlevel": "2",
+	"Sapid": "ZTFI0009",
+	"Email": "jefran.pascua@globe.com.ph",
+	"Name": "Jefran Pascua",
+	"Apvtype": "PROCESSOR",
+	"Status": "",
+	"Editable": "false"
+},
+{
+	"Recnum": "MRF-98001-CD02",
+	"Linenum": "001",
+	"Zlevel": "1",
+	"Sapid": "VE210015",
+	"Email": "takao.baltazar@globe.com.ph",
+	"Name": "Takao Baltazar",
+	"Apvtype": "IS_APPROVER",
+	"Status": "",
+	"Editable": "false"
+}, {
+	"Recnum": "MRF-98001-CD02",
+	"Linenum": "002",
+	"Zlevel": "2",
+	"Sapid": "ZTFI0009",
+	"Email": "jefran.pascua@globe.com.ph",
+	"Name": "Jefran Pascua",
+	"Apvtype": "PROCESSOR",
+	"Status": "",
+	"Editable": "false"
+}]

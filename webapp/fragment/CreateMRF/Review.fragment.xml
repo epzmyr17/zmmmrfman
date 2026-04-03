@@ -1,0 +1,221 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:form="sap.ui.layout.form">
+	<!--	<form:SimpleForm minWidth="1024" editable="false" layout="ResponsiveGridLayout" columnsXL="1" columnsL="1" columnsM="1" labelSpanXL="3"
+		labelSpanL="3" labelSpanM="3" labelSpanS="12"> -->
+	<form:SimpleForm minWidth="1024" editable="false" layout="ResponsiveGridLayout" columnsXL="1" columnsL="1" columnsM="1" labelSpanXL="3"
+		labelSpanL="3" labelSpanM="3" labelSpanS="12">
+		<form:toolbar>
+			<Toolbar>
+				<Title text="{i18n>materialReview}"/>
+				<ToolbarSpacer/>
+				<Button text="{i18n>edit}" press="onWizardJumpStep">
+					<customData>
+						<core:CustomData key="step" value="0"/>
+					</customData>
+				</Button>
+			</Toolbar>
+		</form:toolbar>
+		<form:content>
+			<Toolbar>
+				<Title text="{i18n>commodity}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Label text="{i18n>commodity}"/>
+			<Text text="{createMRF>Atwrt}"/>
+			<Label text="{i18n>businessEntity}"/>
+			<Text text="{createMRF>PlantDesc}"/>
+			<Toolbar>
+				<Title text="{i18n>material}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Table inset="false" delete="onDeletetMaterial" items="{ path: 'createMRF>/NavTo_MRFHeader_Items' }">
+				<columns>
+					<Column hAlign="Begin" width="1.5em" popinDisplay="Inline">
+						<Text text="{i18n>materialNo}"/>
+					</Column>
+					<Column hAlign="Begin" width="5em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+						<Text text="{i18n>materialDesc}"/>
+					</Column>
+					<Column hAlign="End" width="2.5em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+						<header>
+							<Text text="{i18n>qty}"/>
+						</header>
+						<footer>
+							<Text text="{i18n>total}" visible="{=!${createMRF>/IsMultiple}}"/>
+						</footer>
+					</Column>
+					<Column hAlign="Begin" width="5em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline" visible="{createMRF>/IsMultiple}">
+						<Text text="{i18n>deliveryAdd}"/>
+					</Column>
+					<Column hAlign="Begin" width="5em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline" visible="{createMRF>/IsMultiple}">
+						<Text text="{i18n>contactPerson}"/>
+					</Column>
+					<Column hAlign="Begin" width="5em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline" visible="{createMRF>/IsMultiple}">
+						<Text text="{i18n>employeeID}"/>
+					</Column>
+					<Column hAlign="Begin" width="5em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline" visible="{createMRF>/IsMultiple}">
+						<header><Text text="{i18n>contactNumber}"/>
+						</header>
+						<footer>
+							<Text text="{i18n>total}"/>
+						</footer>
+					</Column>
+					<Column hAlign="End" width="2em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+						<header>
+							<Text text="{i18n>amount}"/>
+						</header>
+						<footer>
+							<Text text="{parts:[{path: 'viewConfig>/totalQtyAmount'}, {path: 'i18n>pesoCurreny'}], type: 'sap.ui.model.type.Currency'}"/>
+						</footer>
+					</Column>
+				</columns>
+				<items>
+					<ColumnListItem vAlign="Middle" type="Inactive">
+						<cells>
+							<ObjectIdentifier text="{createMRF>Matnr}"/>
+							<ObjectIdentifier text="{createMRF>Matnrdesc}"/>
+							<ObjectIdentifier text="{createMRF>Quantity}"/>
+							<ObjectIdentifier text="{createMRF>Delivaddress}" visible="{createMRF>/IsMultiple}"/>
+							<ObjectIdentifier text="{createMRF>Contactperson}" visible="{createMRF>/IsMultiple}"/>
+							<!-- Start of insert by MS223343 - PAL-2024-005 : New field 'Employee ID' -->
+							<ObjectIdentifier text="{createMRF>EmployeeIdNum}" visible="{createMRF>/IsMultiple}"/>
+							<!-- End of insert by MS223343 - PAL-2024-005 : New field 'Employee ID' -->
+							<ObjectIdentifier text="{createMRF>Contactnumber}" visible="{createMRF>/IsMultiple}"/>
+							<ObjectIdentifier
+								text="{parts:[{path: 'createMRF>Map'}, {path: 'i18n>pesoCurreny'}], type:'sap.ui.model.type.Currency', formatOptions: { showMeasure: false }}"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</form:content>
+	</form:SimpleForm>
+	<form:SimpleForm minWidth="1024" editable="false" layout="ResponsiveGridLayout" columnsXL="1" columnsL="1" columnsM="1" labelSpanXL="3"
+		labelSpanL="3" labelSpanM="3" labelSpanS="12">
+		<form:toolbar>
+			<Toolbar>
+				<Title text="{i18n>requestDetailReview}"/>
+				<ToolbarSpacer/>
+				<Button text="{i18n>edit}" press="onWizardJumpStep">
+					<customData>
+						<core:CustomData key="step" value="1"/>
+					</customData>
+				</Button>
+			</Toolbar>
+		</form:toolbar>
+		<form:content>
+			<Toolbar>
+				<Title text="{i18n>requestDetails}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Label text="{i18n>purposeOfReq}"/>
+			<Text text="{createMRF>PurposeDesc}"/>
+			<Label text="{i18n>receivingSloc}" visible="{=${createMRF>Purpose} === 'WC' || ${createMRF>Purpose} === 'WW'}"/>
+			<Text text="{createMRF>ReceiveSLoc}" visible="{=${createMRF>Purpose} === 'WC' || ${createMRF>Purpose} === 'WW'}"/>
+			<Label text="{i18n>justificationOfReq}"/>
+			<Text text="{createMRF>Justification}"/>
+			<Toolbar>
+				<Title text="{i18n>chargingDetails}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Label text="{i18n>chargeTo}"/>
+			<Text text="{createMRF>ChargeToDesc}"/>
+			<Label text="{i18n>wbsElemCode}" visible="{=${createMRF>Chargeto} === 'CAPEX'}"/>
+			<Text text="{createMRF>Wbs}" visible="{=${createMRF>Chargeto} === 'CAPEX'}"/>
+			<Label text="{i18n>opexType}" visible="{=${createMRF>Chargeto} === 'OPEX'}"/>
+			<Text visible="{=${createMRF>Chargeto} === 'OPEX'}" text="{createMRF>OpexDesc}"/>
+			<Label text="{i18n>ioNumberCode}" visible="{=${createMRF>Opex} === 'IO' &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}"/>
+			<Text text="{createMRF>Aufnr}" visible="{=${createMRF>Opex} === 'IO' &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}"/>
+			<Label text="{i18n>glAccount}"
+				visible="{=(${createMRF>Opex} === 'CC' || ${createMRF>Opex} === 'IO') &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}"/>
+			<Text text="{createMRF>Saknr}"
+				visible="{=(${createMRF>Opex} === 'CC' || ${createMRF>Opex} === 'IO') &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}"/>
+			<Label text="{i18n>costCenterCode}"
+				visible="{=(${createMRF>Opex} === 'CC' || ${createMRF>Opex} === 'IO') &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}"/>
+			<Text text="{createMRF>Kostl}"
+				visible="{=(${createMRF>Opex} === 'CC' || ${createMRF>Opex} === 'IO') &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}"/>
+			<Label text="{i18n>subsidyCode}" visible="{=${createMRF>Opex} === 'SUBS' &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}"/>
+			<Text text="{createMRF>Subsidy}" visible="{=${createMRF>Opex} === 'SUBS' &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}"/>
+			<Label text="{i18n>specialInst}" visible="{=${createMRF>Instructions}.trim() ? true : false}"/>
+			<Text text="{createMRF>Instructions}" visible="{=${createMRF>Instructions}.trim() ? true : false}"/>
+			<Toolbar>
+				<Title text="{i18n>deliveryDetails}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Label text="{i18n>modeOfDelivery}"/>
+			<Text text="{createMRF>DelivModeDesc}"/>
+			<Label text="{i18n>deliveryAdd}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Text text="{createMRF>Delivaddress}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Label text="{i18n>Contactperson}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Text text="{createMRF>Contactperson}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<!-- Start of insert by MS223343 - PAL-2024-005 : New field 'Employee ID' -->
+			<Label text="{i18n>employeeID}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Text text="{createMRF>EmployeeIdNum}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<!-- End of insert by MS223343 - PAL-2024-005 : New field 'Employee ID' -->
+			<Label text="{i18n>contactNumber}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Text text="{createMRF>Contactnumber}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Label text="{i18n>emailAddress}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Text text="{createMRF>Email}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<!-- Alternate contact person -->
+			<Label text="{i18n>alternateContactName}"
+				visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson} &amp;&amp; ${createMRF>OthContName}.trim() ? true : false}"/>
+			<Text text="{createMRF>OthContName}"
+				visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson} &amp;&amp; ${createMRF>OthContName}.trim() ? true : false }"/>
+			<Label text="{i18n>alternateContactNumber}"
+				visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson} &amp;&amp; ${createMRF>OthContNumber}.trim() ? true : false}"/>
+			<Text text="{createMRF>OthContNumber}"
+				visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson} &amp;&amp; ${createMRF>OthContNumber}.trim() ? true : false}"/>
+			<Label text="{i18n>alternateContactEmail}"
+				visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson} &amp;&amp; ${createMRF>OthEmail}.trim() ? true : false}"/>
+			<Text text="{createMRF>OthEmail}"
+				visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson} &amp;&amp; ${createMRF>OthEmail}.trim() ? true : false}"/>
+			<Toolbar >
+				<Title text="{i18n>supportingDocs}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<List items="{createMRF>/NavTo_MRFHeader_Attachment}">
+				<items>
+					<StandardListItem title="{createMRF>FileName}"/>
+				</items>
+			</List>
+		</form:content>
+	</form:SimpleForm>
+	<form:SimpleForm minWidth="1024" editable="false" layout="ResponsiveGridLayout" columnsXL="1" columnsL="1" columnsM="1" labelSpanXL="3"
+		labelSpanL="3" labelSpanM="3" labelSpanS="12">
+		<form:toolbar>
+			<Toolbar>
+				<Title text="{i18n>approverDetailsReview}"/>
+				<ToolbarSpacer/>
+				<Button text="{i18n>edit}" press="onWizardJumpStep">
+					<customData>
+						<core:CustomData key="step" value="3"/>
+					</customData>
+				</Button>
+			</Toolbar>
+		</form:toolbar>
+		<form:content>
+			<Table inset="false" items="{ path: 'createMRF>/NavTo_MRFHeader_Approver' }">
+				<columns>
+					<Column hAlign="Begin" width="1em" popinDisplay="Inline">
+						<Text text="{i18n>sequence}"/>
+					</Column>
+					<Column hAlign="Begin" width="3em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+						<Text text="{i18n>type}"/>
+					</Column>
+					<Column hAlign="Begin" width="5em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+						<Text text="{i18n>emailAddress}"/>
+					</Column>
+					<Column hAlign="Begin" width="4em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+						<Text text="{i18n>approverName}"/>
+					</Column>
+					<Column hAlign="Begin" width="2em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+						<Text text="{i18n>userId}"/>
+					</Column>
+				</columns>
+				<items>
+					<ColumnListItem vAlign="Middle" type="Inactive">
+						<cells>
+							<ObjectIdentifier text="{createMRF>Zlevel}"/>
+							<ObjectIdentifier text="{path: 'createMRF>Apvtype', formatter: '.formatter.formatApproverType'}"/>
+							<ObjectIdentifier text="{createMRF>Email}"/>
+							<ObjectIdentifier text="{createMRF>Name}"/>
+							<ObjectIdentifier text="{createMRF>Sapid}"/>
+						</cells>
+					</ColumnListItem>
+				</items>
+			</Table>
+		</form:content>
+	</form:SimpleForm>
+</core:FragmentDefinition>

@@ -1,0 +1,112 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form">
+	<f:SimpleForm id="idSimpleFormGeneralInfo" editable="true" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="12"
+		labelSpanS="12" adjustLabelSpan="false" emptySpanXL="2" emptySpanL="2" emptySpanM="4" emptySpanS="0" columnsXL="2" columnsL="2" columnsM="1"
+		singleContainerFullSize="false">
+		<f:content>
+			<Toolbar>
+				<Title text="{i18n>purposeDetails}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Label text="{i18n>purposeOfReq}" required="true"/>
+			<Select forceSelection="false" items="{F4DropdownMRF>/RequestPurposeSet}" selectedKey="{Purpose}" change="onChangePurposeOfReq"
+				enabled="{viewConfig>/editable}">
+				<items>
+					<core:Item text="{F4DropdownMRF>Purpose}" key="{F4DropdownMRF>Id}"/>
+				</items>
+				<customData>
+					<core:CustomData key="control_field_desc" value="PurposeDesc"/>
+				</customData>
+			</Select>
+			<!-- Display Rec.Sloc if Purpose of Req = Warehouse to Warehouse or Warehouse to Contractor -->
+			<Label text="{i18n>receivingSloc}" required="true" visible="{=${Purpose} === 'WC' || ${Purpose} === 'WW'}"/>
+			<Input value="{ReceiveSLoc}" placeholder="{i18n>enterReceivingSloc}" required="true" change="onChangeFieldValue"
+				visible="{=${Purpose} === 'WC' || ${Purpose} === 'WW'}" enabled="{viewConfig>/editable}"
+				maxLength="{path:'/#MRFHeader/ReceiveSLoc/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<Label text="{i18n>justificationOfReq}" required="true"/>
+			<TextArea showExceededText="false" valueLiveUpdate="true" value="{ path: 'Justification'}" change="onChangeFieldValue"
+				placeholder="{i18n>enterJustification}" enabled="{viewConfig>/editable}"
+				maxLength="{path:'/#MRFHeader/Justification/@maxLength', formatter:'.formatter.fnGetMaxLength'}" required="true"/>
+			<Toolbar >
+				<Title text="{i18n>chargingDetails}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Label text="{i18n>chargeTo}" required="true"/>
+			<Select forceSelection="false" selectedKey="{Chargeto}" change="onChangeChargeOpex" items="{F4DropdownMRF>/ChargeTypeSet}"
+				enabled="{viewConfig>/editable}">
+				<items>
+					<core:Item text="{F4DropdownMRF>Charge}" key="{F4DropdownMRF>Id}"/>
+				</items>
+				<customData>
+					<core:CustomData key="type" value="charge"/>
+					<core:CustomData key="control_field_desc" value="ChargeToDesc"/>
+				</customData>
+			</Select>
+			<Label text="{i18n>wbsElemCode}" visible="{=${Chargeto} === 'CAPEX'}" required="true"/>
+			<Input value="{Wbs}" id="idInputWBSCode" placeholder="{i18n>placeHolderWbsElemCode}" visible="{=${Chargeto} === 'CAPEX'}"
+				showValueHelp="false" valueHelpOnly="false" valueHelpRequest="onOpenDialog" enabled="{viewConfig>/editable}" required="true"
+				change="onChangeFieldValue" maxLength="{path:'/#MRFHeader/Wbs/@maxLength', formatter:'.formatter.fnGetMaxLength'}">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfWBSCode"/>
+					<core:CustomData key="variable_name" value="_oListOfWBSCode"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>opexType}" visible="{=${Chargeto} === 'OPEX'}"/>
+			<Select items="{F4DropdownMRF>/OpexTypeSet}" visible="{=${Chargeto} === 'OPEX'}" forceSelection="false" selectedKey="{Opex}"
+				enabled="{viewConfig>/editable}" change="onChangeChargeOpex">
+				<items>
+					<core:Item text="{F4DropdownMRF>Type}" key="{F4DropdownMRF>Id}"/>
+				</items>
+				<customData>
+					<core:CustomData key="type" value="opex"/>
+					<core:CustomData key="control_field_desc" value="OpexDesc"/>
+				</customData>
+			</Select>
+			<Label text="{i18n>ioNumberCode}" visible="{=${Opex} === 'IO' &amp;&amp; ${Chargeto} === 'OPEX'}" required="true"/>
+			<Input value="{Aufnr}" id="idInputIONumber" placeholder="{i18n>placeholderIoNumberCode}"
+				visible="{=${Opex} === 'IO' &amp;&amp; ${Chargeto} === 'OPEX'}" showValueHelp="false" valueHelpOnly="false" valueHelpRequest="onOpenDialog"
+				enabled="{viewConfig>/editable}" required="true" change="onChangeFieldValue"
+				maxLength="{path:'/#MRFHeader/Aufnr/@maxLength', formatter:'.formatter.fnGetMaxLength'}">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfIONumCode"/>
+					<core:CustomData key="variable_name" value="_oListOfIONumCode"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>glAccount}" visible="{=(${Opex} === 'CC' || ${Opex} === 'IO') &amp;&amp; ${Chargeto} === 'OPEX'}"
+				required="false"/>
+			<Input value="{Saknr}" id="idInputGLAccount" placeholder="{i18n>enterGLAccount}"
+				visible="{=(${Opex} === 'CC' || ${Opex} === 'IO') &amp;&amp; ${Chargeto} === 'OPEX'}" showValueHelp="true" valueHelpOnly="true"
+				valueHelpRequest="onOpenDialog" enabled="{viewConfig>/editable}" required="false">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfGLAccount"/>
+					<core:CustomData key="variable_name" value="_oListOfGLAccount"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>costCenterCode}" visible="{=(${Opex} === 'CC' || ${Opex} === 'IO') &amp;&amp; ${Chargeto} === 'OPEX'}"
+				required="{=${Opex} === 'IO' ? false : true}"/>
+			<Input value="{Kostl}" id="idInputCostCenter" placeholder="{i18n>placeholderCostCenterCode}"
+				visible="{=(${Opex} === 'CC' || ${Opex} === 'IO') &amp;&amp; ${Chargeto} === 'OPEX'}" showValueHelp="false" valueHelpOnly="false"
+				valueHelpRequest="onOpenDialog" enabled="{viewConfig>/editable}" required="{=${Opex} === 'IO' ? false : true}"
+				change="onChangeFieldValue" maxLength="{path:'/#MRFHeader/Kostl/@maxLength', formatter:'.formatter.fnGetMaxLength'}">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfCostCenter"/>
+					<core:CustomData key="variable_name" value="_oListOfCostCenter"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>subsidyCode}" visible="{=${Opex} === 'SUBS' &amp;&amp; ${Chargeto} === 'OPEX'}"/>
+			<Input value="{Subsidy}" id="idInputSubsidy" placeholder="{i18n>placeholderSubsidyCode}"
+				visible="{=${Opex} === 'SUBS' &amp;&amp; ${Chargeto} === 'OPEX'}" showValueHelp="true" valueHelpOnly="true" valueHelpRequest="onOpenDialog"
+				enabled="{viewConfig>/editable}" required="true">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfSubsidy"/>
+					<core:CustomData key="variable_name" value="_oListOfSubsidy"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>specialInst}"/>
+			<TextArea value="{ path: 'Instructions'}" change="onChangeFieldValue" placeholder="{i18n>enterInstruction}" enabled="{viewConfig>/editable}"
+				maxLength="{path:'/#MRFHeader/Instructions/@maxLength', formatter:'.formatter.fnGetMaxLength'}" required="false"/>
+		</f:content>
+	</f:SimpleForm>
+</core:FragmentDefinition>

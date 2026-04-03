@@ -1,0 +1,21 @@
+[{
+	"Kostl": "Kostl 1",
+	"Ltext": "Ltext 1",
+	"Verak_User": "Verak_User 1",
+	"Bukrs": "Bukrs 1",
+	"Plant": "1000",
+	"__metadata": {
+		"uri": "CostCenterSet('Kostl%201')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.CostCenter"
+	}
+}, {
+	"Kostl": "Kostl 2",
+	"Ltext": "Ltext 2",
+	"Verak_User": "Verak_User 2",
+	"Bukrs": "Bukrs 2",
+	"Plant": "1000",
+	"__metadata": {
+		"uri": "CostCenterSet('Kostl%202')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.CostCenter"
+	}
+}]

@@ -1,0 +1,12 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<SelectDialog noDataText="{i18n>NoProvinceFound}" title="{i18n>listOfProvince}" search="onSearchF4ValueFilter" confirm="onAddItemDialog"
+		cancel="onCancelValueHelp" items="{path: 'F4DropdownMRF>/ProvinceSet'}" growingThreshold="100">
+		<StandardListItem title="{F4DropdownMRF>ProvinceDesc}" type="Active"/>
+		<customData>
+			<core:CustomData key="search_field" value="ProvinceDesc"/>
+			<core:CustomData key="search_field_desc" value="ProvinceCode"/>
+			<core:CustomData key="control_field" value="ProvinceCode"/>
+			<core:CustomData key="control_field_desc" value="ProvinceDesc"/>
+		</customData>
+	</SelectDialog>
+</core:FragmentDefinition>

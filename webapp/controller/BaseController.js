@@ -1,0 +1,1369 @@
+/*global XLSX*/
+sap.ui.define([
+	"sap/ui/core/mvc/Controller",
+	"sap/ui/model/json/JSONModel",
+	"sap/m/MessageBox",
+	"sap/m/MessageToast",
+	"sap/m/Dialog",
+	"sap/m/Button",
+	"sap/m/Text",
+	"com/globe/MRF_Manage/model/formatter",
+	"com/globe/MRF_Manage/model/models",
+	"com/globe/MRF_Manage/model/constant",
+	"com/globe/MRF_Manage/model/type/EmailType",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator",
+], function (Controller, JSONModel, MessageBox, MessageToast, Dialog, Button, Text, Formatter, Model, Constant, EmailType, Filter,
+	FilterOperator) {
+	"use strict";
+
+	/**
+	 * Parent class for all controller.
+	 * @class
+	 * @extends sap.ui.core.mvc.Controller
+	 * @constructor
+	 * @public
+	 * @author Takao Baltazar (BALTAZART)
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 * @name com.globe.MRF_Manage.controller.BaseController
+	 */
+	return Controller.extend("com.globe.MRF_Manage.controller.BaseController", /** @lends com.globe.MRF_Manage.controller.BaseController */ {
+		_aCommodity: ["DEVICES", "CARDS", "LIFESTYLE"],
+
+		types: {
+			emailType: new EmailType()
+		},
+
+		/**
+		 * Helper class formatter
+		 */
+		formatter: Formatter,
+
+		/**
+		 * Route name for Report
+		 */
+		_sRouteReport: "Reports",
+
+		/**
+		 * Convenience method for accessing the router in every controller of the application.
+		 * @public
+		 * @returns {sap.ui.core.routing.Router} the router for this component
+		 */
+		getRouter: function () {
+			return this.getOwnerComponent().getRouter();
+		},
+
+		/**
+		 * Convenience method for getting the view model by name in every controller of the application.
+		 * @public
+		 * @param {string} sName the model name
+		 * @returns {sap.ui.model.Model} the model instance
+		 */
+		getModel: function (sName) {
+			return this.getView().getModel(sName);
+		},
+
+		/**
+		 * Convenience method for getting the resource bundle.
+		 * @public
+		 * @returns {sap.ui.model.resource.ResourceModel} the resourceModel of the component
+		 */
+		getResourceBundle: function () {
+			return this.getOwnerComponent().getModel("i18n").getResourceBundle();
+		},
+
+		/**
+		 * Event handler for navigating back.
+		 * It there is a history entry or an previous app-to-app navigation we go one step back in the browser history
+		 * If not, it will replace the current entry of the browser history with the master route.
+		 * @public
+		 */
+		onNavBack: function () {
+			this.getRouter().navTo("master", {}, true);
+		},
+
+		/**
+		 * Event handler to download Material template.
+		 * @public
+		 */
+		onDownloadTemplate: function () {
+			var oViewConfigModel = this.getView().getModel("viewConfig");
+
+			sap.m.URLHelper.redirect(oViewConfigModel.getProperty("/templateUrl", false));
+		},
+
+		// Start of insert - MS223343 - PAL-2022-004
+		/**
+		 * Event handler to download Material list.
+		 * @public
+		 */
+		onDownloadMaterialList: function () {
+			var oContextModel = this.fnGetContextModel();
+			var oContextProp = oContextModel.getProperty("/");
+			var sUrl =
+				"/sap/opu/odata/sap/ZMMM_OP_MRF_HELP_SRV/zmmm_i_helpmatnr?sap-client=300&$select=matnr,maktx,werks&$filter=werks eq '" +
+				oContextProp.Werks + "' and commodity eq '" + oContextProp.Atwrt + "'&$format=xlsx";
+
+			sap.m.URLHelper.redirect(sUrl);
+		},
+		// End of insert - MS223343 - PAL-2022-004
+
+		/**
+		 * Event handler to open any dialog.
+		 * @param {object} oEvent Contains button value help event object.
+		 * @public
+		 */
+		onOpenDialog: function (oEvent) {
+			var oCustomData = oEvent.getSource().data();
+			if (!this[oCustomData.variable_name]) {
+				// We use the id of a view, to get an instance of control inside a framgnet.
+				this[oCustomData.variable_name] = sap.ui.xmlfragment(this.getView().getId(),
+					"com.globe.MRF_Manage.fragment.Dialogs." + oCustomData.fragment_name, this);
+				this.getView().addDependent(this[oCustomData.variable_name]);
+				// Add max length to select dialog
+				this.fnSetSelectDialogMaxLength(this[oCustomData.variable_name], oCustomData.searchfield_maxlength);
+			}
+			// Clear filter
+			this[oCustomData.variable_name].getBinding("items").filter([]);
+
+			this.fnFilterMatr(oCustomData);
+			this.fnFilterByPlant(oCustomData);
+
+			this[oCustomData.variable_name].open();
+		},
+
+		/**
+		 * Filter material search help
+		 * @param {object} oCustomData Contains custom data object.
+		 * @public
+		 */
+		fnFilterMatr: function (oCustomData) {
+			// Create a filter for material search help
+			if (oCustomData.variable_name === "_oLstOfMaterial") {
+				var oFilter = this.fnCreateModelFilterMatr({
+					value1: "werks",
+					value2: "commodity"
+				});
+				this[oCustomData.variable_name].getBinding("items").filter(oFilter);
+			}
+		},
+
+		/**
+		 * Filter search help by plant
+		 * @param {object} oCustomData Contains custom data object.
+		 * @public
+		 */
+		fnFilterByPlant: function (oCustomData) {
+			// Create a filter for charging details search help
+			if (oCustomData.variable_name !== "_oLstOfMaterial" && oCustomData.variable_name !== "_oListOfPlants") {
+				var oFilter = this.fnCreateModelFilterPlant({
+					value1: "Plant"
+				});
+				this[oCustomData.variable_name].getBinding("items").filter(oFilter);
+			}
+		},
+
+		/**
+		 * Set the maxlength of searchfield in Select Dialog control.
+		 * @param {object} oControl Contains the dialog control.
+		 * @param {int} iLength Contains the maxlength.
+		 * @public
+		 */
+		fnSetSelectDialogMaxLength: function (oControl, iLength) {
+			var oDialog = oControl.getAggregation("_dialog");
+			var oSubHeader = oDialog.getAggregation("subHeader");
+			var oSearchField = oSubHeader.getAggregation("contentMiddle")[0];
+
+			oSearchField.setMaxLength(Formatter.formatToInt(iLength));
+		},
+
+		/**
+		 * Event handler to filter data on the search field of select dialog.
+		 * Applicable for material and charging details search help.
+		 * @param {object} oEvent Contains the event handler of search field of select dialog.
+		 * @public
+		 */
+		onSearchF4Value: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			var oSource = oEvent.getSource();
+			var oDefaultFilter = null;
+			var oCustomData = oSource.data();
+
+			// Id and desc filter.
+			var oSearchFilter = new Filter({
+				filters: [
+					new Filter(oCustomData["search_field"], FilterOperator.Contains, sValue),
+					new Filter(oCustomData["search_field_desc"], FilterOperator.Contains, sValue)
+				],
+				and: false
+			});
+
+			if (oSource.data().hasOwnProperty("search_field_filter_commodity")) {
+				// Check if search help is material list
+				oDefaultFilter = this.fnCreateModelFilterMatr({
+					value1: oCustomData["search_field_filter"],
+					value2: oCustomData["search_field_filter_commodity"]
+				});
+			} else {
+				// Additional plant no. filter for charging details
+				oDefaultFilter = this.fnCreateModelFilterPlant({
+					value1: oCustomData["search_field_filter"]
+				});
+			}
+
+			// Filter the binding items.
+			var oBinding = oEvent.getParameter("itemsBinding");
+			oBinding.filter([new Filter({
+				filters: [
+					oSearchFilter,
+					oDefaultFilter
+				],
+				and: true
+			})]);
+		},
+
+		/**
+		 * Event handler to filter data on the search field of select dialog.
+		 * Applicable for province, city and barangay search help.
+		 * @param {object} oEvent Contains the event handler of search field of select dialog.
+		 * @public
+		 */
+		onSearchF4ValueFilter: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			var oSource = oEvent.getSource();
+			var oCustomData = oSource.data();
+
+			// Id and desc filter.
+			var oSearchFilter = new Filter({
+				filters: [
+					new Filter(oCustomData["search_field"], FilterOperator.Contains, sValue),
+					new Filter(oCustomData["search_field_desc"], FilterOperator.Contains, sValue)
+				],
+				and: false
+			});
+
+			// Filter city and barangay base on selected values
+			var oContextModel = this.fnGetBindingContext(this._inputCtrl);
+			var oContextParam = oContextModel.getObject();
+			var oFilter = oSearchFilter;
+			if (oCustomData.search_field_filter1) {
+				if (oContextParam[oCustomData.search_field_filter1] && oContextParam[oCustomData.search_field_filter1] !== '0000000000') {
+					oFilter = [new Filter({
+						filters: [
+							oSearchFilter,
+							new Filter(oCustomData.search_field_filter1, FilterOperator.EQ, oContextParam[oCustomData.search_field_filter1])
+						],
+						and: true
+					})];
+				} else {
+					oFilter = [new Filter({
+						filters: [
+							oSearchFilter
+						],
+						and: true
+					})];
+
+				}
+
+			}
+
+			// Filter the binding items.
+			var oBinding = oEvent.getParameter("itemsBinding");
+			oBinding.filter(oFilter);
+		},
+
+		/**
+		 * Event handler to filter data on the plant search field of select dialog.
+		 * @param {object} oEvent Contains the event handler of search field of select dialog.
+		 * @public
+		 */
+		onSearchF4ValuePlant: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			var oSource = oEvent.getSource();
+			var oCustomData = oSource.data();
+
+			// Id and desc filter
+			var oSearchFilter = new Filter({
+				filters: [
+					new Filter(oCustomData["search_field"], FilterOperator.Contains, sValue),
+					new Filter(oCustomData["search_field_desc"], FilterOperator.Contains, sValue)
+				],
+				and: false
+			});
+
+			// Filter the binding items.
+			var oBinding = oEvent.getParameter("itemsBinding");
+			oBinding.filter([oSearchFilter]);
+		},
+
+		/**
+		 * Event handler to filter data on the approver search field of select dialog.
+		 * @param {object} oEvent Contains the event handler of search field of select dialog.
+		 * @public
+		 */
+		onSearchF4ValueApprover: function (oEvent) {
+			var sValue = oEvent.getParameter("value");
+			var oSource = oEvent.getSource();
+			var oContextProp = this.fnGetBindingContext(this._inputApproverEmail).getObject();
+
+			// First name, last name and email filter
+			var oSearchFilter = new Filter({
+				filters: [
+					new Filter(oSource.data("search_field"), FilterOperator.Contains, sValue),
+					new Filter(oSource.data("search_field_desc1"), FilterOperator.Contains, sValue),
+					new Filter(oSource.data("search_field_desc2"), FilterOperator.Contains, sValue)
+				],
+				and: false
+			});
+
+			// Approver type filter
+			var oApvFilter = new Filter({
+				filters: [
+					new Filter(oSource.data("search_field_filter"), FilterOperator.EQ, oContextProp["Apvtype"])
+				]
+			});
+
+			// Filter the binding items.
+			var oBinding = oEvent.getParameter("itemsBinding");
+			oBinding.filter([new Filter({
+				filters: [
+					oSearchFilter,
+					oApvFilter
+				],
+				and: true
+			})]);
+		},
+
+		/**
+		 * Initial local model for config
+		 * @public
+		 */
+		fnInitConfigModel: function () {
+			var oModel = Model.createViewConfigModel();
+
+			this.getView().setModel(oModel, "viewConfig");
+		},
+
+		/**
+		 * Attached deffered to OData model, for the submission of function import
+		 * @public
+		 */
+		fnAttachedDefferedModel: function () {
+			var oModel = this.getOwnerComponent().getModel();
+			var aGroupId = [Constant.ODATA_GROUP_ID];
+			var aDeferredGroups = oModel.getDeferredGroups().concat(aGroupId);
+
+			oModel.setDeferredGroups(aDeferredGroups);
+			oModel.setChangeGroups({
+				MRFHeader: {
+					groupId: aGroupId[0],
+					single: false
+				},
+				MRFItemSet: {
+					groupId: aGroupId[0],
+					single: false
+				}
+			});
+		},
+
+		/**
+		 * Event handler when file type is mismatched when uploading materials.
+		 * @public
+		 */
+		onTypeMissMatchExcel: function () {
+			this.showMsgBoxError(this.getResourceBundle().getText("mismatchFile"));
+		},
+
+		fnGetReferenceList: function () {
+			var oData = this.getOwnerComponent().getModel("F4DropdownMRF");
+			return new Promise(function (oResolve, oReject) {
+				oData.read("/BrgySet", {
+					success: function (oResult) {
+						oResolve(oResult);
+					},
+					error: function (oError) {
+						oReject(oError);
+					}
+				});
+			});
+		},
+
+		/**
+		 * Opens a message box error when invalid file types is selected.
+		 * @public
+		 */
+		onTypeMissmatch: function () {
+			this.showMsgBoxError(this.getResourceBundle().getText("errorUploadFileTypeAttachment"));
+		},
+
+		/**
+		 * Openns a message box error when max file size exceeded.
+		 * @public
+		 */
+		onFileSizeExceed: function () {
+			this.showMsgBoxError(this.getResourceBundle().getText("errorUploadFileSize"));
+		},
+
+		/* =========================================================== */
+		/* Generic Dialog											   */
+		/* =========================================================== */
+
+		/**
+		 * Open dialog with text as content and a confirmation button.
+		 * @param {object} oTextParam Contains title and text message.
+		 * @public
+		 */
+		showDialogMessageConfirm: function (oTextParam) {
+			return new Promise(function (fnResolve, fnReject) {
+				var oDialog = new Dialog({
+					title: oTextParam.titleMsg,
+					type: 'Message',
+					content: new Text({
+						text: oTextParam.contentMsg
+					}),
+					beginButton: new Button({
+						text: this.getResourceBundle().getText("yesProceed"),
+						type: "Emphasized",
+						press: function () {
+							oDialog.close();
+							fnResolve();
+						}
+					}),
+					endButton: new Button({
+						text: this.getResourceBundle().getText("noGoBack"),
+						press: function () {
+							oDialog.close();
+						}
+					}),
+					afterClose: function () {
+						oDialog.destroy();
+					}
+				});
+				oDialog.open();
+			}.bind(this));
+		},
+
+		/**
+		 * Open dialog with text as content
+		 * @param {object} oTextParam Contains title and text message.
+		 * @public
+		 */
+		showDialogMessage: function (oTextParam) {
+			return new Promise(function (fnResolve, fnReject) {
+				var oDialog = new Dialog({
+					title: oTextParam.titleMsg,
+					type: 'Message',
+					content: new Text({
+						text: oTextParam.contentMsg
+					}),
+					beginButton: new Button({
+						text: this.getResourceBundle().getText("Close"),
+						type: "Emphasized",
+						press: function () {
+							oDialog.close();
+							fnResolve();
+						}
+					}),
+					afterClose: function () {
+						oDialog.destroy();
+					}
+				});
+				oDialog.open();
+			}.bind(this));
+		},
+
+		/**
+		 * Display message box confirm with promise chain.
+		 * @return {Promise} Returns a promise resolve after confirmation.
+		 * @public
+		 */
+		showMsgBoxConfirm: function (sMsg) {
+			return new Promise(function (fnResolve, fnReject) {
+				MessageBox.confirm(sMsg, {
+					actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
+					onClose: function (sAction) {
+						if (sAction === "OK") {
+							fnResolve();
+						}
+					}.bind(this)
+				});
+			}.bind(this));
+		},
+
+		/**
+		 * Open dialog with text as content and a confirmation button.
+		 * @param {object} oTextParam Contains title and text message.
+		 * @public
+		 */
+		fnShowMessageWithConfirm: function (oTextParam) {
+			return new Promise(function (fnResolve, fnReject) {
+				var oDialog = new Dialog({
+					title: oTextParam.titleMsg,
+					type: 'Message',
+					contentWidth: "500px",
+					content: new sap.m.VBox({
+						items: [
+							new Text({
+								text: oTextParam.contentMsg
+							})
+						]
+					}),
+					beginButton: new Button({
+						text: this.getResourceBundle().getText("confirmCancel"),
+						type: "Emphasized",
+						press: function (oEvent) {
+							fnResolve();
+							oDialog.close();
+						}.bind(this)
+					}),
+					endButton: new Button({
+						text: this.getResourceBundle().getText("confirmGoBack"),
+						press: function () {
+							oDialog.close();
+						}.bind(this)
+					}),
+					afterClose: function () {
+						oDialog.destroy();
+					}
+				});
+				this.getView().addDependent(oDialog);
+				oDialog.open();
+			}.bind(this));
+		},
+
+		/**
+		 * Display message box warning with promise chain.
+		 * @return {Promise} Returns a promise resolve after confirmation.
+		 * @public
+		 */
+		showMsgBoxWarning: function (sMsg) {
+			return new Promise(function (fnResolve, fnReject) {
+				MessageBox.warning(sMsg, {
+					actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
+					onClose: function (sAction) {
+						if (sAction === "OK") {
+							fnResolve();
+						} else {
+							fnReject();
+						}
+					}.bind(this)
+				});
+			}.bind(this));
+		},
+
+		/**
+		 * Get Total QTY amount of selected material.
+		 * @public
+		 */
+		fnTotalMatrQty: function () {
+			var iTotalAmount = 0;
+			var oModelMRFQty = this.getView().getModel("viewConfig");
+			var oContextModel = this.fnGetContextModel();
+			var oContextParam = oContextModel.getProperty("/");
+
+			if (!jQuery.isEmptyObject(oContextParam)) {
+				oContextParam.NavTo_MRFHeader_Items.forEach(function (oItem) {
+					iTotalAmount = iTotalAmount + (parseFloat(oItem.Quantity) * parseFloat(oItem.Map));
+				});
+
+				// Set property for local model computation.
+				oModelMRFQty.setProperty("/totalQtyAmount", iTotalAmount);
+
+				// Validate fields
+				this.onChangeFieldValue();
+			}
+		},
+
+		/**
+		 * Queue a delete request for MRFHeader
+		 * @param {object} oItem Contains payload of edit mode.
+		 * @public
+		 */
+		fnRequestDeleteMRF: function (oItem) {
+			var sKey = this.getModel().createKey("MRFHeaderSet", {
+				Recnum: oItem.Recnum
+			});
+
+			this.getView().getModel().remove("/" + sKey, {
+				groupId: Constant.ODATA_GROUP_ID
+			});
+
+			return Promise.resolve();
+		},
+
+		/* =========================================================== */
+		/* Material methods                                           */
+		/* =========================================================== */
+
+		/**
+		 * Event handler for add material using search help
+		 * @param {object} oEvent Contains button event object
+		 * @public
+		 */
+		onAddMaterial: function (oEvent) {
+			var oSelectedItems = oEvent.getParameter("selectedContexts");
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+
+			// Limit to 300 materials only.
+			if ((oModel.getProperty("/NavTo_MRFHeader_Items").length + oSelectedItems.length) > Constant.MAX_MATERIAL_ITEM) {
+				this.showMsgBoxError(this.getResourceBundle().getText("errorImportMaterialExceed"));
+				return;
+			}
+
+			// Loop selected items
+			jQuery.each(oSelectedItems, function (iIndx, oItem) {
+				var oParam = oItem.getObject();
+				var oMatrPayload = {
+					Quantity: "1",
+					Matnr: oParam.matnr,
+					Matnrdesc: oParam.maktx,
+					Werks: oParam.werks,
+					Delivaddress: "",
+					Contactperson: "",
+					Contactnumber: "",
+					// Start of change by VE210015 - INC0122838 : Allow blank price in material selection
+					Map: oParam.price || "0.00"
+						// End of change by VE210015 - INC0122838
+				};
+
+				oPayload.NavTo_MRFHeader_Items.push(oMatrPayload);
+			}.bind(this));
+
+			// Update model
+			oModel.setProperty("/", oPayload);
+			oModel.refresh(true);
+
+			// Update total amount
+			this.fnTotalMatrQty();
+
+			// Validate fields
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Event handler to delete material
+		 * @param {object} oEvent Contains button event object
+		 * @public
+		 */
+		onDeletetMaterial: function (oEvent) {
+			var oSelecteItem = oEvent.getParameter("listItem");
+			var oContextParam = this.fnGetBindingContext(oSelecteItem);
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+			var iIndex = this.byId("idSelectedMaterialTable").indexOfItem(oSelecteItem);
+
+			// Update model
+			oPayload.NavTo_MRFHeader_Items.splice(iIndex, 1);
+			oModel.setProperty("/", oPayload);
+
+			// Update total amount
+			this.fnTotalMatrQty();
+		},
+
+		/**
+		 * Read the file as binary string using JS FileReader.
+		 * @public
+		 */
+		fnReadFile: function () {
+			return new Promise(function (fnResolve, fnReject) {
+				var oFileUploader = this.byId("idFileUploadMaterial");
+				var oReader = new FileReader();
+				var oFocusDomRef = oFileUploader.getFocusDomRef();
+				var oFile = oFocusDomRef.files[0];
+				oReader.readAsBinaryString(oFile);
+				oReader.onload = fnResolve;
+			}.bind(this));
+		},
+
+		/**
+		 * Read the binary string using XLSX utility, to convert the content of the file into object array format.
+		 * @param {object} oEvent Contains File Reader object event.
+		 * @public
+		 */
+		fnReadBinaryXLSX: function (oEvent) {
+			var sBinaryResult = oEvent.target.result;
+			var aExcelData = null;
+
+			// Read XLSX binary text
+			var workbook = XLSX.read(sBinaryResult, {
+				type: 'binary'
+			});
+			workbook.SheetNames.forEach(function (sheetName) {
+				// Here is your object for every sheet in workbook
+				aExcelData = XLSX.utils.sheet_to_row_object_array(workbook.Sheets["Sheet1"], {
+					blankrows: false,
+					defval: ''
+				});
+			});
+
+			return Promise.resolve(aExcelData);
+		},
+
+		/**
+		 * Loop the result of XLSX utility to check if header names are correct.
+		 * @param {array} aExcelData Contains the result of XLSX utility.
+		 * @public
+		 */
+		fnValidateHeaderMatrImport: function (aExcelData) {
+			var bIsError = false;
+			aExcelData.forEach(function (oItem) {
+				if (!oItem.hasOwnProperty(this.getResourceBundle().getText("materialNo")) ||
+					!oItem.hasOwnProperty(this.getResourceBundle().getText("qty")) ||
+					!oItem.hasOwnProperty(this.getResourceBundle().getText("deliveryAdd")) ||
+					!oItem.hasOwnProperty(this.getResourceBundle().getText("contactPerson")) ||
+					// Start of insert by MS223343 - PAL-2024-005
+					!oItem.hasOwnProperty(this.getResourceBundle().getText("employeeID")) ||
+					// End of insert by MS223343 - PAL-2024-005
+					!oItem.hasOwnProperty(this.getResourceBundle().getText("contactNumber")) ||
+					!oItem.hasOwnProperty(this.getResourceBundle().getText("provinceCode")) ||
+					!oItem.hasOwnProperty(this.getResourceBundle().getText("cityCode")) ||
+					!oItem.hasOwnProperty(this.getResourceBundle().getText("barangayCode"))) {
+					bIsError = true;
+					return;
+				}
+			}.bind(this));
+
+			if (bIsError) {
+				return Promise.reject(this.getResourceBundle().getText("errorImportMatrEditHeader"));
+			}
+			return Promise.resolve(aExcelData);
+		},
+
+		/**
+		 * Loop the result of XLSX utility and trigger an OData batch request to validate each material no.
+		 * @param {array} aExcelData Contains the result of XLSX utility.
+		 * @public
+		 */
+		fnRequestValidateMatr: function (aExcelData) {
+			var oModel = this.fnGetContextModel();
+
+			// Limit to 300 materials only.
+			if (aExcelData.length > Constant.MAX_MATERIAL_ITEM) {
+				return Promise.reject(this.getResourceBundle().getText("errorImportMaterialExceed"));
+			}
+
+			// Check if there is data.
+			if (aExcelData.length > 0) {
+				// Loop Excel Data.
+				jQuery.each(aExcelData, function (iIdx, oItemExcel) {
+					// Request validation
+					var oPayload = {
+						Matnr: oItemExcel[this.getResourceBundle().getText("materialNo")].toString().substr(0, 40),
+						Qty: oItemExcel[this.getResourceBundle().getText("qty")].toString().substr(0, 7),
+						Werks: oModel.getProperty("/Werks"),
+						Atwrt: oModel.getProperty("/Atwrt"),
+						DelivAdd: oItemExcel[this.getResourceBundle().getText("deliveryAdd")].toString().substr(0, 255),
+						ContactPers: oItemExcel[this.getResourceBundle().getText("contactPerson")].toString().substr(0, 12),
+						// Start of insert by MS223343 - PAL-2024-005
+						EmployeeIdNum: oItemExcel[this.getResourceBundle().getText("employeeID")].toString().substr(0, 30),
+						// End of insert by MS223343 - PAL-2024-005
+						ContactNo: oItemExcel[this.getResourceBundle().getText("contactNumber")].toString().substr(0, 30),
+						ProvinceCode: oItemExcel[this.getResourceBundle().getText("provinceCode")].toString().substr(0, 30),
+						CityCode: oItemExcel[this.getResourceBundle().getText("cityCode")].toString().substr(0, 30),
+						BarangayCode: oItemExcel[this.getResourceBundle().getText("barangayCode")].toString().substr(0, 30)
+					};
+					this.getOwnerComponent().getModel().create("/MaterialCheckSet", oPayload, {
+						groupId: Constant.ODATA_GROUP_ID
+					});
+				}.bind(this));
+				return Promise.resolve(aExcelData);
+			} else {
+				return Promise.reject(this.getResourceBundle().getText("errorImportMaterials"));
+			}
+		},
+
+		/**
+		 * Process the validated data after OData batch request and append to local model.
+		 * @param {object} oData Contains the result of OData batch request.
+		 * @public
+		 */
+		fnProcessData: function (oData) {
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+			var sError = "";
+			var aValidMatr = [];
+			var aReferenceList = this.getView().getModel("StaticModel").getProperty("/ReferenceList");
+			var sAddressCodeError = this.getResourceBundle().getText("errorImportMatrEditAddressCodes");
+
+			oData.__batchResponses[0].__changeResponses.forEach(function (oItem) {
+				if (!oItem.data.ReturnMsg) {
+					var bIsError = false;
+					if (oPayload.IsMultiple) {
+						var oReferenceItem = aReferenceList.filter(function (oReference) {
+							return oReference.BarangayCode === oItem.data.BarangayCode;
+						});
+						if (oReferenceItem.length > 0) {
+							if (oReferenceItem[0].BarangayCode != oItem.data.BarangayCode ||
+								oReferenceItem[0].CityCode != oItem.data.CityCode ||
+								oReferenceItem[0].ProvinceCode != oItem.data.ProvinceCode) {
+								bIsError = true;
+							}
+						} else {
+							bIsError = true;
+						}
+					}
+					if (bIsError) {
+						sError = sError + (oItem.data.ReturnMsg) + "\n" + oItem.data.Matnr + " - " + sAddressCodeError;
+					} else {
+						var oMaterialItem = {
+							Matnr: oItem.data.Matnr,
+							Matnrdesc: oItem.data.Maktx,
+							Quantity: oItem.data.Qty ? oItem.data.Qty : "1",
+							// Start of change by VE210015 - INC0130706 : Allow blank price in file upload of material
+							Map: oItem.data.Price || "0.00",
+							// End of change by VE210015 - INC0130706
+							Delivaddress: oPayload.IsMultiple ? oItem.data.DelivAdd.toString() : "",
+							Contactnumber: oPayload.IsMultiple ? oItem.data.ContactNo.toString() : "",
+							Contactperson: oPayload.IsMultiple ? oItem.data.ContactPers.toString() : "",
+							// Start of insert by MS223343 - PAL-2024-005
+							EmployeeIdNum: oPayload.IsMultiple ? oItem.data.EmployeeIdNum.toString() : "",
+							// End of insert by MS223343 - PAL-2024-005
+							ProvinceCode: oPayload.IsMultiple ? oItem.data.ProvinceCode.toString() : "",
+							ProvinceDesc: oPayload.IsMultiple ? oReferenceItem[0].ProvinceCode : "",
+							CityCode: oPayload.IsMultiple ? oItem.data.CityCode.toString() : "",
+							CityDesc: oPayload.IsMultiple ? oReferenceItem[0].CityCode : "",
+							BarangayCode: oPayload.IsMultiple ? oItem.data.BarangayCode.toString() : "",
+							BarangayText: oPayload.IsMultiple ? oReferenceItem[0].BarangayCode : "",
+							Werks: oItem.data.Werks
+						};
+						// Push to array for valid entries.
+						aValidMatr.push(oMaterialItem);
+					}
+				} else {
+					sError = sError + (oItem.data.ReturnMsg) + "\n";
+				}
+			});
+
+			return Promise.resolve({
+				materials: aValidMatr,
+				error: sError
+			});
+		},
+
+		/* =========================================================== */
+		/* Attacment methods                                           */
+		/* =========================================================== */
+
+		/**
+		 * Read the file as data url using JS FileReader.
+		 * @param {object} oItem Contains payload of edit mode.
+		 * @public
+		 */
+		fnReadAttachment: function (oItem) {
+			return new Promise(function (fnResolve, fnReject) {
+				var oFileReader = new FileReader();
+				oFileReader.readAsDataURL(oItem.file);
+				oFileReader.onload = fnResolve;
+			});
+		},
+
+		/**
+		 * Build a base64 format string based from the result of file reader as data url.
+		 * @param {object} oItem Contains payload of edit mode.
+		 * @param {object} oEvent Contains the event object of file reader as data url.
+		 * @return {string} Returns a base64 format string from the uploaded file.
+		 * @public
+		 */
+		fnBuildBase64Attchment: function (oItem, oEvent) {
+			var sBase64Marker = 'data:' + oItem.file.type + ';base64,';
+			var iBase64Index = oEvent.target.result.indexOf(sBase64Marker) + sBase64Marker.length;
+			var sBase64 = oEvent.target.result.substring(iBase64Index);
+
+			return Promise.resolve(sBase64);
+		},
+
+		/**
+		 * Queue a create batch request for attachment
+		 * @param {object} oItem Contains payload of edit mode.
+		 * @param {string} sBase64 Contains a base64 string from the uploaded file.
+		 * @public
+		 */
+		fnRequestAttachment: function (oItem, sBase64) {
+			var oPayload = {
+				"XSTRING": sBase64
+			};
+			this.getView().getModel().create("/AttachmentSet", oPayload, {
+				headers: {
+					slug: oItem.Recnum + "|" + oItem.FileName + "|" + oItem.FileSize + "|" + oItem.Icon + "|" + oItem.MimeType
+				},
+				groupId: Constant.ODATA_GROUP_ID
+			});
+		},
+
+		/* =========================================================== */
+		/* Approvers methods                                           */
+		/* =========================================================== */
+
+		/**
+		 * Event handler to open Select Dialog for the list of approvers.
+		 * For other select dialogs, see BaseController.
+		 * @param {object} oEvent Contains the button event handler.
+		 * @public
+		 */
+		onOpenApproverList: function (oEvent) {
+			var oCustomData = oEvent.getSource().data();
+			if (!this._oLstOfApprovers) {
+				this._oLstOfApprovers = sap.ui.xmlfragment("com.globe.MRF_Manage.fragment.Dialogs.ListOfApprovers", this);
+				this.getView().addDependent(this._oLstOfApprovers);
+				// Add max length to select dialog
+				this.fnSetSelectDialogMaxLength(this._oLstOfApprovers, oCustomData.searchfield_maxlength);
+			}
+			// Save instance
+			this._inputApproverEmail = oEvent.getSource();
+
+			// Add filter based on approver type.
+			var oContextModel = this.fnGetBindingContext(this._inputApproverEmail);
+			var oContextProp = oContextModel.getObject();
+			this._oLstOfApprovers.getBinding("items").filter(
+				new Filter("ApproverType", FilterOperator.EQ, oContextProp.Apvtype)
+			);
+
+			this._oLstOfApprovers.open();
+		},
+
+		/**
+		 * Event handler for add next approver.
+		 * Approvers: IS Approver, Division Head, Group Head.
+		 * @param {object} oEvent Contains button event object
+		 * @private
+		 */
+		onAddApprovers: function (oEvent) {
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+			var oNewParamApv = this._fnApproverPayload();
+			var iIndex = jQuery.inArray(oPayload.Atwrt, Constant.COMMODITY_LCD);
+			// Get Custom sort type according to selected commodity.
+			var aSortApv = iIndex > -1 ? Constant.APPROVER_SORT_ORDER_LCD : Constant.APPROVER_SORT_ORDER_WOP;
+
+			// 1. Check if we can still add approver.
+			var aResult = oPayload.NavTo_MRFHeader_Approver.filter(function (oItem) {
+				return oItem.Apvtype === Constant.APPRVER_GROUP_HEAD || oItem.Apvtype === Constant.APPROVER_DIVISION_HEAD;
+			});
+
+			// 2. Exit method if we cannot add approver anymore.
+			if (aResult.length > 1) {
+				this.showMsgBoxError(this.getResourceBundle().getText("errorNextApproval"));
+				return;
+			}
+
+			// 3. Get if existing in Division Head, or Group Head.
+			var aDivisionHead = aResult.filter(function (oItem) {
+				return oItem.Apvtype === Constant.APPROVER_DIVISION_HEAD;
+			});
+			var aGroupHead = aResult.filter(function (oItem) {
+				return oItem.Apvtype === Constant.APPRVER_GROUP_HEAD;
+			});
+
+			// 4. Assign approver type.
+			if (aDivisionHead.length <= 0) {
+				oNewParamApv.Apvtype = Constant.APPROVER_DIVISION_HEAD;
+			} else if (aGroupHead.length <= 0) {
+				oNewParamApv.Apvtype = Constant.APPRVER_GROUP_HEAD;
+			}
+
+			// 5. Push new entry to approver's table.
+			oPayload.NavTo_MRFHeader_Approver.push(oNewParamApv);
+
+			// 6. Sort approver's table according to approver type and commodity.
+			oPayload.NavTo_MRFHeader_Approver.sort(function (sValA, sValB) {
+				return aSortApv.indexOf(sValA.Apvtype) - aSortApv.indexOf(sValB.Apvtype);
+			});
+
+			// 7. Update sequence number and update the model.
+			oPayload.NavTo_MRFHeader_Approver.forEach(function (oItem, iIdx) {
+				var iSequnece = iIdx + 1;
+				oItem.Zlevel = iSequnece.toString();
+			});
+			oModel.setProperty("/", oPayload);
+
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Event handler for add FBA approver.
+		 * Approvers: FBA.
+		 * @param {object} oEvent Contains button event object
+		 * @private
+		 */
+		onAddFBAApprover: function () {
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+			var oNewParamApv = this._fnApproverPayload();
+			var iIndex = jQuery.inArray(oPayload.Atwrt, Constant.COMMODITY_LCD);
+			// Get Custom sort type according to selected commodity.
+			var aSortApv = iIndex > -1 ? Constant.APPROVER_SORT_ORDER_LCD : Constant.APPROVER_SORT_ORDER_WOP;
+
+			// 1. Check if we can still add approver.
+			var aResult = oPayload.NavTo_MRFHeader_Approver.filter(function (oItem) {
+				return oItem.Apvtype === Constant.APPROVER_FBA;
+			}.bind(this));
+
+			// 2. Exit method if we cannot add approver anymore.
+			if (aResult.length >= Constant.MAX_ADDITIONAL_FBA) {
+				this.showMsgBoxError(this.getResourceBundle().getText("errorAddFBAApproval"));
+				return;
+			}
+
+			// 3. Assign approver type.
+			oNewParamApv.Apvtype = Constant.APPROVER_FBA;
+
+			// 4. Push new entry to approver's table.
+			oPayload.NavTo_MRFHeader_Approver.push(oNewParamApv);
+
+			// 5. Sort approver's table according to approver type and commodity.
+			oPayload.NavTo_MRFHeader_Approver.sort(function (sValA, sValB) {
+				return aSortApv.indexOf(sValA.Apvtype) - aSortApv.indexOf(sValB.Apvtype);
+			});
+
+			// 6. Update sequence number and update the model.
+			oPayload.NavTo_MRFHeader_Approver.forEach(function (oItem, iIdx) {
+				var iSequnece = iIdx + 1;
+				oItem.Zlevel = iSequnece.toString();
+			});
+			oModel.setProperty("/", oPayload);
+
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Event handler for additional approver.
+		 * Approver: Additional approver.
+		 * @param {object} oEvent Contains button event object
+		 * @public
+		 */
+		onAdditionalApprover: function () {
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+			var iIndex = null;
+			var aApprover = oPayload.NavTo_MRFHeader_Approver;
+			var oNewParamApv = this._fnApproverPayload();
+			oNewParamApv.Apvtype = Constant.APPROVER_ADDITIONAL;
+
+			// 1. Filter items not equal to the selected id
+			var aResult = aApprover.filter(function (oItem) {
+				return oItem.Apvtype === Constant.APPROVER_ADDITIONAL;
+			}.bind(this));
+
+			// 2. Exit method if it exceeds the max additional approver.
+			if (aResult.length >= Constant.MAX_ADDITIONAL_APPROVER) {
+				this.showMsgBoxError(this.getResourceBundle().getText("errorAdditionalApproval"));
+				return;
+			}
+
+			// 3. Get the last index of IS Approver or Additional Approver.
+			for (var iCtr = aApprover.length - 1; iCtr >= 0; iCtr--) {
+				if (jQuery.inArray(aApprover[iCtr].Apvtype, [Constant.APPROVER_ADDITIONAL, Constant.APPROVER_IS]) > -1) {
+					iIndex = iCtr + 1;
+					break;
+				}
+			}
+			// 4. Insert the record using JS Splice
+			aApprover.splice(iIndex, 0, oNewParamApv);
+
+			// 5. Update sequence number and update model.
+			aApprover.forEach(function (oItem, iIdx) {
+				var iIndexField = iIdx + 1;
+				oItem.Zlevel = iIndexField.toString();
+			});
+			oModel.setProperty("/", oPayload);
+
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Event handler when selecting email in approvers line item.
+		 * @param {object} oEvent Contains event object of Select Dialog.
+		 * @public
+		 */
+		onAddApproverEmail: function (oEvent) {
+			var oSelectedItem = oEvent.getParameter("selectedItem");
+			var oParam = oSelectedItem.getBindingContext("F4DropdownMRF").getObject();
+			var oModel = this.fnGetContextModel();
+			var oBindingContext = this.fnGetBindingContext(this._inputApproverEmail);
+			var sPath = oBindingContext.getPath();
+			var oPayload = oBindingContext.getObject();
+
+			// Check if email is already selected
+			var aResult = oModel.getProperty("/NavTo_MRFHeader_Approver").filter(function (oItem) {
+				return oItem.Email === oParam.SmtpAddr;
+			}.bind(this));
+			// Prompt error if email is existing.
+			if (aResult.length > 0) {
+				this.showMsgBoxError(this.getResourceBundle().getText("errorDuplicateEmail"));
+				return;
+			}
+
+			oPayload.Email = oParam.SmtpAddr;
+			oPayload.Sapid = oParam.Bname;
+			oPayload.Name = oParam.NameFirst + " " + oParam.NameLast;
+			oModel.setProperty(sPath, oPayload);
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Event handler to delete approvers
+		 * @param {object} oEvent Contains button event object
+		 * @public
+		 */
+		onDeletetApproval: function (oEvent) {
+			var oSource = oEvent.getSource();
+			var oContextModel = this.fnGetBindingContext(oSource);
+			var oContextPayload = oContextModel.getObject();
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+
+			// Filter items not equal to the selected id
+			var aResult = oPayload.NavTo_MRFHeader_Approver.filter(function (oItem) {
+				return oItem.Zlevel !== oContextPayload.Zlevel;
+			}.bind(this));
+
+			// Update sequence number.
+			aResult.forEach(function (oItem, iIdx) {
+				var iIndex = iIdx + 1;
+				oItem.Zlevel = iIndex.toString();
+			});
+
+			// Update model
+			oPayload.NavTo_MRFHeader_Approver = aResult;
+			oModel.setProperty("/", oPayload);
+			oModel.refresh(true);
+
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Create an object for the payload of approver line item.
+		 * @return {object} Return a payload for approver line item.
+		 * @public
+		 */
+		_fnApproverPayload: function () {
+			return {
+				Zlevel: "",
+				Apvtype: "",
+				Email: "",
+				Sapid: "",
+				Name: "",
+				Status: "",
+				Editable: true
+			};
+		},
+
+		/**
+		 * Request an OData Submit Changes to submit all pending request.
+		 * @public
+		 */
+		fnRequestSubmitChanges: function () {
+			return new Promise(function (fnResolve, fnReject) {
+				this.getModel().submitChanges({
+					groupId: Constant.ODATA_GROUP_ID,
+					success: fnResolve,
+					error: fnReject
+				});
+			}.bind(this));
+		},
+
+		/**
+		 * Callback function, after a successfull submission
+		 * @param {object} oData Contains the data of the newly created entry if it is provided by the backend.
+		 * @param {object} oResponse Contains information about the response of the request.
+		 * @public
+		 */
+		fnSuccessSubmit: function (oData, oResponse) {
+			if (oData.hasOwnProperty("__batchResponses") &&
+				oData.__batchResponses.length &&
+				oData.__batchResponses[0].hasOwnProperty("__changeResponses") &&
+				oData.__batchResponses[0].__changeResponses.length) {
+
+				// Additional checking for status code.
+				var oChangeResponse = this.fnCheckChangeResponse(oData.__batchResponses[0].__changeResponses);
+				if (!oChangeResponse) {
+					return Promise.resolve(oData);
+				} else {
+					return Promise.reject(oChangeResponse.message);
+				}
+			} else {
+				var oErrors = JSON.parse(oData.__batchResponses[0].response.body);
+				var sErrorDetails = oErrors.error.message.value;
+
+				return Promise.reject(sErrorDetails);
+			}
+		},
+
+		/**
+		 * Loop and check each change reponse if an error is occured using status code.
+		 * @param {array} Contains the change resonse of batch request.
+		 * @return {object} Returns an error reponse if applicable.
+		 */
+		fnCheckChangeResponse: function (aChangeResponse) {
+			var oErrorResponse = null;
+
+			aChangeResponse.forEach(function (oItem) {
+				if (!oItem.hasOwnProperty("statusCode") || !(oItem.statusCode >= 200 && oItem.statusCode <= 300)) {
+					oErrorResponse = oItem;
+					return;
+				}
+			});
+
+			return oErrorResponse;
+		},
+
+		/**
+		 * Catch and display an error message box when an error is encountered during a promise chain.
+		 * @param {object} oError Contains error message.
+		 * @public
+		 */
+		fnCatchRequestError: function (oError) {
+			this.setBusyDialogOff();
+
+			var sMessage = typeof oError === "string" ? oError : oError.message;
+			this.showMsgBoxError(sMessage);
+
+			// Clear message manager.
+			this.fnRemoveMsgManager();
+		},
+
+		/* =========================================================== */
+		/* Creation of Filters                                      */
+		/* =========================================================== */
+
+		/**
+		 * Create filter for Plant and Commodity
+		 * @param {object} oField Contains field name.
+		 * @public
+		 */
+		fnCreateModelFilterMatr: function (oField) {
+			var oContextModel = this.fnGetContextModel();
+			var oFilter = new Filter({
+				filters: [
+					new Filter(oField.value1, FilterOperator.EQ, oContextModel.getProperty("/Werks")),
+					new Filter(oField.value2, FilterOperator.EQ, oContextModel.getProperty("/Atwrt"))
+				],
+				and: true
+			});
+
+			return oFilter;
+		},
+
+		/**
+		 * Create filter for Plant
+		 * @param {object} oField Contains field name.
+		 * @public
+		 */
+		fnCreateModelFilterPlant: function (oField) {
+			var oContextModel = this.fnGetContextModel();
+			var oFilter = new Filter({
+				filters: [
+					new Filter(oField.value1, FilterOperator.EQ, oContextModel.getProperty("/Werks"))
+				]
+			});
+
+			return oFilter;
+		},
+
+		/**
+		 * Validate required fields for approver step
+		 * @public
+		 */
+		fnValidateApprovers: function () {
+			var oContextModel = this.fnGetContextModel();
+			var oContextProp = oContextModel.getProperty("/");
+			var bValidate = true;
+			oContextProp.NavTo_MRFHeader_Approver.forEach(function (oItem) {
+				if (!oItem.Email && oItem.Apvtype !== Constant.APPROVER_ALLOCATOR && oItem.Apvtype !== Constant.APPROVER_PROCESSOR) {
+					bValidate = false;
+					return;
+				}
+			});
+			return bValidate;
+		},
+
+		/**
+		 * Setup message manager.
+		 * @public
+		 */
+		fnInitMsgManager: function () {
+			// set message model
+			var oMessageManager = sap.ui.getCore().getMessageManager();
+			this.getView().setModel(oMessageManager.getMessageModel(), "message");
+
+			// or just do it for the whole view
+			oMessageManager.registerObject(this.getView(), true);
+		},
+
+		/**
+		 * Check the length of message manager.
+		 * @public
+		 */
+		fnCheckMsManager: function () {
+			var bValidate = true;
+			var aMsgManagerData = this.getView().getModel("message").getData();
+			bValidate = aMsgManagerData.length > 0 ? false : true;
+
+			return bValidate;
+		},
+
+		/**
+		 * Remove all messages in message manager.
+		 * @public
+		 */
+		fnRemoveMsgManager: function () {
+			sap.ui.getCore().getMessageManager().removeAllMessages();
+		},
+
+		/**
+		 * Event handler for navigating back.
+		 * It there is a history entry or an previous app-to-app navigation we go one step back in the browser history
+		 * If not, it will replace the current entry of the browser history with the master route.
+		 * @public
+		 */
+		fnNavigateToReport: function (sRouteName) {
+			this.setBusyDialogOn();
+			this.getRouter().navTo(sRouteName, false);
+		},
+
+		/**
+		 * Display error message box
+		 * @param {string} sMsg Contain text message.
+		 * @public
+		 */
+		showMsgBoxError: function (sMsg) {
+			MessageBox.error(sMsg);
+		},
+
+		/**
+		 * Set Busy Page On
+		 * @public
+		 */
+		setBusyOn: function () {
+			var oModel = this.getView().getModel("viewConfig");
+			oModel.setProperty("/busy", true);
+		},
+
+		/**
+		 * Set Busy Page Off
+		 * @public
+		 */
+		setBusyOff: function () {
+			var oModel = this.getView().getModel("viewConfig");
+			oModel.setProperty("/busy", false);
+		},
+
+		/**
+		 * Set Global Busy Indicator On
+		 * @public
+		 */
+		setBusyDialogOn: function () {
+			sap.ui.core.BusyIndicator.show(0);
+		},
+
+		/**
+		 * Set Global Busy Indicator Off
+		 * @public
+		 */
+		setBusyDialogOff: function () {
+			sap.ui.core.BusyIndicator.hide(0);
+		}
+	});
+});

@@ -1,0 +1,15 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<SelectDialog noDataText="{i18n>noListOfGLAcount}" title="{i18n>listOfGLAccount}" search="onSearchF4Value" confirm="onAddChargeDetails"
+		items="{ path: 'F4DropdownMRF>/GlAccountSet' }">
+		<items>
+			<StandardListItem title="{F4DropdownMRF>Saknr}" description="{F4DropdownMRF>Txt50}" type="Active"/>
+		</items>
+		<customData>
+			<core:CustomData key="search_field" value="Saknr"/>
+			<core:CustomData key="search_field_desc" value="Txt50"/>
+			<core:CustomData key="search_field_filter" value="Plant"/>
+			<core:CustomData key="control_field" value="Saknr"/>
+			<core:CustomData key="control_field_desc" value="SaknrDesc"/>
+		</customData>
+	</SelectDialog>
+</core:FragmentDefinition>

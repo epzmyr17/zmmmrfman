@@ -1,0 +1,184 @@
+{
+	"_version": "1.12.0",
+	"sap.app": {
+		"id": "com.globe.MRF_Manage",
+		"type": "application",
+		"i18n": "i18n/i18n.properties",
+		"applicationVersion": {
+			"version": "1.0.0"
+		},
+		"title": "{{appTitle}}",
+		"description": "{{appDescription}}",
+		"sourceTemplate": {
+			"id": "servicecatalog.connectivityComponentForManifest",
+			"version": "0.0.0"
+		},
+		"dataSources": {
+			"ZMMM_OP_MRF_REQUESTOR_SRV": {
+				"uri": "/sap/opu/odata/sap/ZMMM_OP_MRF_REQUESTOR_SRV/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "2.0",
+					"localUri": "localService/ZMMM_OP_MRF_REQUESTOR_SRV/metadata.xml"
+				}
+			},
+			"ZMMM_OP_MRF_HELP_SRV": {
+				"uri": "/sap/opu/odata/sap/ZMMM_OP_MRF_HELP_SRV/",
+				"type": "OData",
+				"settings": {
+					"odataVersion": "2.0",
+					"localUri": "localService/metadata.xml"
+				}
+			}
+		}
+	},
+	"sap.ui": {
+		"technology": "UI5",
+		"icons": {
+			"icon": "",
+			"favIcon": "",
+			"phone": "",
+			"phone@2": "",
+			"tablet": "",
+			"tablet@2": ""
+		},
+		"deviceTypes": {
+			"desktop": true,
+			"tablet": true,
+			"phone": true
+		}
+	},
+	"sap.ui5": {
+		"flexEnabled": false,
+		"rootView": {
+			"viewName": "com.globe.MRF_Manage.view.App",
+			"type": "XML",
+			"async": true,
+			"id": "App"
+		},
+		"dependencies": {
+			"minUI5Version": "1.52.18",
+			"libs": {
+				"sap.m": {},
+				"sap.ui.core": {},
+				"sap.ui.layout": {}
+			}
+		},
+		"contentDensities": {
+			"compact": true,
+			"cozy": true
+		},
+		"models": {
+			"i18n": {
+				"type": "sap.ui.model.resource.ResourceModel",
+				"settings": {
+					"bundleName": "com.globe.MRF_Manage.i18n.i18n"
+				}
+			},
+			"": {
+				"type": "sap.ui.model.odata.v2.ODataModel",
+				"settings": {
+					"defaultBindingMode": "TwoWay",
+					"defaultCountMode": "Request",
+					"refreshAfterChange": false
+				},
+				"dataSource": "ZMMM_OP_MRF_REQUESTOR_SRV"
+			},
+			"RequestorModel": {
+				"type": "sap.ui.model.odata.v2.ODataModel",
+				"settings": {
+					"defaultBindingMode": "TwoWay",
+					"defaultCountMode": "Request",
+					"refreshAfterChange": false
+				},
+				"dataSource": "ZMMM_OP_MRF_REQUESTOR_SRV"
+			},
+			"F4DropdownMRF": {
+				"type": "sap.ui.model.odata.v2.ODataModel",
+				"settings": {
+					"defaultBindingMode": "OneWay",
+					"defaultCountMode": "Request"
+				},
+				"dataSource": "ZMMM_OP_MRF_HELP_SRV"
+			}
+		},
+		"resources": {
+			"css": [
+				{
+					"uri": "css/style.css"
+				}
+			]
+		},
+		"routing": {
+			"config": {
+				"routerClass": "sap.m.routing.Router",
+				"viewType": "XML",
+				"async": true,
+				"viewPath": "com.globe.MRF_Manage.view",
+				"controlAggregation": "pages",
+				"controlId": "app",
+				"clearControlAggregation": false,
+				"bypassed": {
+					"target": "NotFound"
+				}
+			},
+			"routes": [
+				{
+					"name": "Reports",
+					"pattern": "",
+					"target": [
+						"Reports"
+					]
+				},
+				{
+					"name": "CreateMRF",
+					"pattern": "CreateMRF",
+					"target": [
+						"CreateMRF"
+					]
+				},
+				{
+					"name": "EditMRF",
+					"pattern": "EditMRF/{MRFId}",
+					"target": [
+						"EditMRF"
+					]
+				}
+			],
+			"targets": {
+				"NotFound": {
+					"viewType": "XML",
+					"transition": "show",
+					"clearControlAggregation": false,
+					"viewId": "NotFound",
+					"viewName": "NotFound"
+				},
+				"Reports": {
+					"viewType": "XML",
+					"transition": "slide",
+					"clearControlAggregation": false,
+					"viewId": "Reports",
+					"viewName": "Reports"
+				},
+				"CreateMRF": {
+					"viewType": "XML",
+					"transition": "slide",
+					"clearControlAggregation": false,
+					"viewId": "CreateMRF",
+					"viewName": "CreateMRF"
+				},
+				"EditMRF": {
+					"viewType": "XML",
+					"transition": "slide",
+					"clearControlAggregation": false,
+					"viewId": "EditMRF",
+					"viewName": "EditMRF"
+				}
+			}
+		}
+	},
+	"sap.platform.abap": {
+		"uri": "/sap/bc/ui5_ui5/sap/zmmm_mrf_man/webapp",
+		"_version": "1.1.0"
+	}
+}

@@ -1,0 +1,25 @@
+[{
+	"Atinn": "001",
+	"Atzhl": "DEVICES",
+	"Commodity": "DEVICES"
+}, {
+	"Atinn": "002",
+	"Atzhl": "LIFESTYLE",
+	"Commodity": "LIFESTYLE"
+}, {
+	"Atinn": "003",
+	"Atzhl": "CARDS",
+	"Commodity": "CARDS"
+}, {
+	"Atinn": "004",
+	"Atzhl": "WIRELINE",
+	"Commodity": "WIRELINE"
+}, {
+	"Atinn": "005",
+	"Atzhl": "OFFICE SUPPLIES",
+	"Commodity": "OFFICE SUPPLIES"
+}, {
+	"Atinn": "006",
+	"Atzhl": "ERAT",
+	"Commodity": "ERAT"
+}]

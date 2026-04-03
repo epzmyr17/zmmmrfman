@@ -1,0 +1,37 @@
+[{
+	"Bname": "Takao Baltazar",
+	"Persnumber": "Persnumber 1",
+	"Addrnumber": "Addrnumber 1",
+	"Name1": "Name1 1",
+	"Country": "Country 1",
+	"City1": "City1 1",
+	"Street": "Street 1",
+	"TelNumber": "TelNumber 1",
+	"Title": "Title 1",
+	"NameFirst": "NameFirst 1",
+	"NameLast": "NameLast 1",
+	"SmtpAddr": "SmtpAddr 1",
+	"ApproverType": "IS_APPROVER",
+	"__metadata": {
+		"uri": "ListApproverSet('Bname%201')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.ListApprover"
+	}
+}, {
+	"Bname": "Jeff Pascua",
+	"Persnumber": "Persnumber 2",
+	"Addrnumber": "Addrnumber 2",
+	"Name1": "Name1 2",
+	"Country": "Country 2",
+	"City1": "City1 2",
+	"Street": "Street 2",
+	"TelNumber": "TelNumber 2",
+	"Title": "Title 2",
+	"NameFirst": "NameFirst 2",
+	"NameLast": "NameLast 2",
+	"SmtpAddr": "SmtpAddr 2",
+	"ApproverType": "FBA",
+	"__metadata": {
+		"uri": "ListApproverSet('Bname%202')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.ListApprover"
+	}
+}]

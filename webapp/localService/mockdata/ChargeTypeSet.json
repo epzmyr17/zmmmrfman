@@ -1,0 +1,9 @@
+[{
+	"Mandt": "1000",
+	"Id": "CAPEX",
+	"Charge": "Capex"
+}, {
+	"Mandt": "2000",
+	"Id": "OPEX",
+	"Charge": "Opex"
+}]

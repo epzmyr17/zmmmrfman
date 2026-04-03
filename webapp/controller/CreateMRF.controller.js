@@ -1,0 +1,1026 @@
+sap.ui.define([
+	"com/globe/MRF_Manage/controller/BaseController",
+	"sap/ui/model/json/JSONModel",
+	"sap/ui/model/Filter",
+	"sap/ui/model/FilterOperator",
+	"sap/m/MessageBox",
+	"com/globe/MRF_Manage/model/formatter",
+	"sap/m/MessageToast",
+	"com/globe/MRF_Manage/model/models",
+	"com/globe/MRF_Manage/model/validator",
+	"com/globe/MRF_Manage/model/url",
+	"com/globe/MRF_Manage/model/constant"
+], function (BaseController, JSONModel, Filter, FilterOperator, MessageBox, Formatter, MessageToast, Model, Validator, URL, Constant) {
+	"use strict";
+
+	/**
+	 * Request an MRF controller for the Wizard floorplan.
+	 * @class
+	 * @extends com.globe.MRF_Manage.controller.BaseController
+	 * @constructor
+	 * @public
+	 * @author Takao Baltazar (VE210015)
+	 * @since 1.0.0
+	 * @version 1.0.0
+	 * @name com.globe.MRF_Manage.controller.CreateMRF
+	 */
+	return BaseController.extend("com.globe.MRF_Manage.controller.CreateMRF", /** @lends com.globe.MRF_Manage.controller.CreateMRF */ {
+
+		/**
+		 * Contains submission type
+		 */
+		_sType: null,
+
+		/**
+		 * Contains selected commodity type
+		 */
+		_sCommodityType: null,
+
+		/* =========================================================== */
+		/* lifecycle methods                                           */
+		/* =========================================================== */
+
+		/**
+		 * Called when the detail controller is instantiated. It sets up the event handling for the master/detail communication and other lifecycle tasks.
+		 * @public
+		 */
+		onInit: function () {
+			this.getRouter().getRoute("CreateMRF").attachPatternMatched(this.onRouteMatched, this);
+		},
+
+		/* =========================================================== */
+		/* event handlers                                              */
+		/* =========================================================== */
+
+		/**
+		 * Binds the view to the object path and expands the aggregated line items.
+		 * @param {sap.ui.base.Event} oEvent pattern match event in route 'object'
+		 * @public
+		 */
+		onRouteMatched: function (oEvent) {
+			this.fnInitConfigModel();
+			this.fnAttachedDefferedModel();
+			this.fnRemoveMsgManager();
+			this.fnInitMsgManager();
+			this._fnInitPayloadModel();
+			this._fnResetControls();
+
+			this.setBusyDialogOn();
+			// Get Reference List (province, city, barangay) for exporting file
+			var that = this;
+			var aReferenceList = this.getView().getModel("StaticModel").getProperty("/ReferenceList");
+			if (aReferenceList.length > 0) {
+				this.setBusyDialogOff();
+			} else {
+				this.getView().getModel("StaticModel").setData(Model.createStaticModel());
+				this.fnGetReferenceList().then(function (oResult) {
+					that.getOwnerComponent().getModel("StaticModel").setProperty("/ReferenceList", oResult.results);
+					that.setBusyDialogOff();
+				});
+			}
+		},
+
+		/**
+		 * Event handler when cancel button is clicked
+		 */
+		onCancelCreate: function () {
+			// this.showMsgBoxConfirm(this.getResourceBundle().getText("confirmCancelReqTitle"))
+			// 	.then(this.fnNavigateToReport.bind(this, Constant.ROUTE_REPORT));
+
+			this.fnShowMessageWithConfirm({
+				titleMsg: this.getResourceBundle().getText("confirmTitle"),
+				contentMsg: this.getResourceBundle().getText("confirmMessage")
+			}).then(this.fnNavigateToReport.bind(this, Constant.ROUTE_REPORT));
+		},
+
+		/**
+		 * Execute a Promise chain to read the file and trigger an OData service to validate the material no.
+		 */
+		onUploadMaterial: function () {
+			this.setBusyDialogOn();
+			// this.fnRemoveMsgManager();
+			this.fnReadFile()
+				.then(this.fnReadBinaryXLSX.bind(this))
+				.then(this.fnValidateHeaderMatrImport.bind(this))
+				.then(this.fnRequestValidateMatr.bind(this))
+				.then(this.fnRequestSubmitChanges.bind(this))
+				.then(this.fnSuccessSubmit.bind(this))
+				.then(this.fnProcessData.bind(this))
+				.then(this._fnCheckMatrData.bind(this))
+				.then(this.setBusyDialogOff.bind(this))
+				.catch(this.fnCatchRequestError.bind(this));
+		},
+
+		/**
+		 * Event handler for uploading material file of Wizard Step 2
+		 * @param {object} oEvent Contains button event object
+		 */
+		___onUploadMaterial: function (oEvent) {
+			if (!this.byId("idFileUploadMaterial").getValue()) {
+				MessageToast.show(this.getResourceBundle().getText("selectFile"));
+				return;
+			}
+
+			var oProp = this.getView().getModel("createMRF").getProperty("/");
+			if (oProp.NavTo_MRFHeader_Items.length > 0) {
+				MessageBox.warning(this.getResourceBundle().getText("warningMsgMatSelect"), {
+					actions: [sap.m.MessageBox.Action.OK, sap.m.MessageBox.Action.CANCEL],
+					onClose: function (sAction) {
+						if (sAction === "OK") {
+							this._fnUploadMaterial();
+						}
+					}.bind(this)
+				});
+			} else {
+				this._fnUploadMaterial();
+			}
+		},
+
+		/**
+		 * Event handler after selecting a file in file uploader control
+		 * @param {object} oEvent Contains event object of file uploader.
+		 */
+		onFileSelect: function (oEvent) {
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+			var oFile = oEvent.getParameter("files")[0];
+			var iIndexFound = -1;
+			if (oFile) {
+				var oParam = {
+					FileName: oFile.name,
+					file: oFile,
+					FileSize: Formatter.fnFormatBytes(oFile.size),
+					Icon: Formatter.fnFormatFileIcon(oFile.type),
+					MimeType: oFile.type
+				};
+				// Check if file is existing in local model.
+				oPayload.NavTo_MRFHeader_Attachment.forEach(function (oItem, iIdx) {
+					if (oItem.FileName === oParam.FileName) {
+						iIndexFound = iIdx;
+						return;
+					}
+				});
+				// If file is existing, replace the file. Otherwise, push to array.
+				if (iIndexFound > -1) {
+					this.showMsgBoxConfirm(this.getResourceBundle().getText("confirmReplaceFile", [oParam.FileName]))
+						.then(function () {
+							oPayload.NavTo_MRFHeader_Attachment.splice(iIndexFound, 1, oParam);
+							oModel.setProperty("/", oPayload);
+							oModel.refresh(true);
+						});
+				} else {
+					oPayload.NavTo_MRFHeader_Attachment.push(oParam);
+					oModel.setProperty("/", oPayload);
+					oModel.refresh(true);
+				}
+			}
+		},
+
+		/**
+		 * Event handler when delete item is clicked in attachment section.
+		 * @param {object} oEvent Contains event object of Custom List Item delete button.
+		 */
+		onFileDeleted: function (oEvent) {
+			var oListItem = oEvent.getParameter("listItem");
+			var iIndexOfItem = this.byId("idAttachmentList").indexOfItem(oListItem);
+			var sPath = oListItem.getBindingContextPath();
+			var oContextModel = this.fnGetBindingContext(oListItem);
+			var oContextParam = oContextModel.getObject();
+			var oModel = this.fnGetContextModel();
+			var oProp = oModel.getProperty("/");
+
+			this.showMsgBoxConfirm(this.getResourceBundle().getText("confirmDeleteFile", [oContextParam.FileName]))
+				.then(function () {
+					oProp.NavTo_MRFHeader_Attachment.splice(iIndexOfItem, 1);
+					oModel.setProperty("/", oProp);
+					oModel.refresh(true);
+				});
+		},
+
+		onDelete: function () {
+
+			var oModel = this.getView().byId("idSelectedMaterialTable").getModel("createMRF");
+			var oTable = this.getView().byId("idSelectedMaterialTable");
+
+			// delete multi selected items
+			var aSelectedItems = oTable.getSelectedIndices();
+			aSelectedItems.sort(function (a, b) {
+				return b - a;
+			});
+			var oPayload = oModel.getProperty("/");
+			aSelectedItems.filter(function (iIdx) {
+				oPayload.NavTo_MRFHeader_Items.splice(iIdx, 1);
+			});
+			oTable.clearSelection();
+
+			// delete single selection
+			// var iIdx = oTable.getSelectedIndex();
+			// var oPayload = oModel.getProperty("/");
+			// var oSelected = oPayload.NavTo_MRFHeader_Items[iIdx];
+			// oPayload.NavTo_MRFHeader_Items.splice(iIdx, 1);
+
+			//var aItems = oModel.getProperty("/NavTo_MRFHeader_Items");
+			//aItems.splice(iIdx, 1);
+			//oModel.setProperty("/NavTo_MRFHeader_Items", aItems);
+			oModel.setProperty("/", oPayload);
+
+			// Update total amount
+			this.fnTotalMatrQty();
+
+			oTable.getModel("createMRF").refresh();
+			oModel.refresh(true);
+
+			/*if (this._fnCheckItemExistInServer(oSelected)) {
+				this.aDeleteMatrMaint.push(oSelected);
+			}*/
+		},
+
+		/**
+		 * Event handler when selecting a commodity type.
+		 * Add a default approver based from selected commodity.
+		 * @param {object} oEvent Contains event object of Select control.
+		 */
+		onSelectCommodity: function (oEvent) {
+			var sKey = oEvent.getSource().getSelectedKey();
+			var oModel = this.fnGetContextModel();
+
+			// If commodity not initial and material line item has value.
+			if (this._sCommodityType && oModel.getProperty("/NavTo_MRFHeader_Items").length > 0) {
+				this.showMsgBoxWarning(this.getResourceBundle().getText("warningMsgCommoditySelect"))
+					.then(function () {
+						this._sCommodityType = sKey;
+						// Set approvers and reset material line item.
+						this._fnSetDefaultApprovers(sKey);
+						this._fnClearMaterial();
+						this.onChangeFieldValue();
+					}.bind(this))
+					.catch(function () {
+						// Re-assign again the commodity with the previous value.
+						oModel.setProperty("/Atwrt", this._sCommodityType);
+					}.bind(this));
+			} else {
+				this._sCommodityType = sKey;
+				this._fnSetDefaultApprovers(sKey);
+				this.onChangeFieldValue();
+			}
+		},
+
+		/**
+		 * Event handler to update local model for any Select / Combo Box element.
+		 * @param {object} oEvent Contains Combo Box / Select event object.
+		 */
+		onAddComboBoxDesc: function (oEvent) {
+			var oSource = oEvent.getSource();
+			var sSelectItem = oSource.getSelectedItem().getProperty("text");
+			var sCustomDataField = oSource.data("control_field_desc");
+			var oModel = this.fnGetContextModel();
+
+			if (sCustomDataField === "DelivModeDesc") {
+				if (sSelectItem === "Rush Delivery") {
+					// Start of change MS223343 - Add warning message
+					oSource.setValueStateText(this.getResourceBundle().getText("warningDelivModeRush"));
+					oSource.setValueState(Constant.VALUE_STATE_WARNING);
+				} else if (sSelectItem === "Pickup") {
+					oSource.setValueStateText(this.getResourceBundle().getText("warningDelivModePickup"));
+					oSource.setValueState(Constant.VALUE_STATE_WARNING);
+					// End of change MS223343 - Add warning message
+				} else {
+					oSource.setValueState(Constant.VALUE_STATE_NONE);
+					//oControl.setValueStateText("Info info info");
+				}
+			}
+
+			if (sCustomDataField === "PurposeDesc") {
+				if (sSelectItem === "Warehouse to Warehouse" || sSelectItem === "Warehouse to Contractor") {
+					oSource.setValueStateText(this.getResourceBundle().getText("warningPurpose"));
+					oSource.setValueState(Constant.VALUE_STATE_WARNING);
+
+				} else {
+					oSource.setValueState(Constant.VALUE_STATE_NONE);
+				}
+			}
+
+			oModel.setProperty("/" + sCustomDataField, sSelectItem);
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Event handler to open any select dialog with filter.
+		 * @param {object} oEvent Contains button value help event object.
+		 * @public
+		 * Use for dialog of province, city and barangay
+		 */
+		onOpenDialogFilter: function (oEvent) {
+			var oCustomData = oEvent.getSource().data();
+			var oModel = this.getView().getModel("createMRF");
+			var oPayload = oModel.getProperty("/");
+			if (!this[oCustomData.variable_name]) {
+				// We use the id of a view, to get an instance of control inside a framgnet.
+				this[oCustomData.variable_name] = sap.ui.xmlfragment(this.getView().getId(),
+					"com.globe.MRF_Manage.fragment.Dialogs." + oCustomData.fragment_name, this);
+				this.getView().addDependent(this[oCustomData.variable_name]);
+				// Add max length to select dialog
+				this.fnSetSelectDialogMaxLength(this[oCustomData.variable_name], oCustomData.searchfield_maxlength);
+			}
+			// Save Instance
+			this._inputCtrl = oEvent.getSource();
+
+			// Filter of province and city base selected values
+			var oContextModel = this.fnGetBindingContext(this._inputCtrl);
+			var oContextParam = oContextModel.getObject();
+			var oFilter = [];
+
+			if (oCustomData.fragment_name === "ListOfCity") {
+				if (oContextParam.ProvinceDesc) {
+					oFilter.push(new Filter("ProvinceCode", FilterOperator.EQ, oContextParam.ProvinceCode));
+				}
+			} else if (oCustomData.fragment_name === "ListOfBarangay") {
+				if (oContextParam.CityDesc) {
+					oFilter.push(new Filter("CityCode", FilterOperator.EQ, oContextParam.CityCode));
+				}
+				if (oContextParam.ProvinceDesc) {
+					oFilter.push(new Filter("ProvinceCode", FilterOperator.EQ, oContextParam.ProvinceCode));
+				}
+			}
+
+			this[oCustomData.variable_name].getBinding("items").filter(oFilter);
+
+			this[oCustomData.variable_name].open();
+		},
+
+		/**
+		 * Event handler to open Message Manager popover.
+		 * @param {object} oEvent Contaons button event object
+		 */
+		onOpenMsgManager: function (oEvent) {
+			if (!this._oMsgManager) {
+				this._oMsgManager = sap.ui.xmlfragment(this.getView().getId(), "com.globe.MRF_Manage.fragment.Popover.MessageManager", this);
+				this.getView().addDependent(this._oMsgManager);
+			}
+			this._oMsgManager.openBy(oEvent.getSource());
+		},
+
+		/**
+		 * Event handler when review button is clicked.
+		 */
+		onWizardReview: function () {
+			// Compute total qty for material
+			this.fnTotalMatrQty();
+
+			var oNavContainer = this.byId("idNavContainer");
+			oNavContainer.to(this.byId("idPageReview"));
+		},
+
+		/**
+		 * Event handler when edit button is clicked on review page.
+		 * @param {object} oEvent Contains the event object of button.
+		 */
+		onWizardJumpStep: function (oEvent) {
+			var iStep = parseInt(oEvent.getSource().data("step"), 10);
+			var oWizard = this.byId("idWizard");
+			var oNavContainer = this.byId("idNavContainer");
+
+			var fnAfterNavigate = function () {
+				oWizard.goToStep(oWizard.getSteps()[iStep]);
+				oNavContainer.detachAfterNavigate(fnAfterNavigate);
+			}.bind(this);
+
+			oNavContainer.attachAfterNavigate(fnAfterNavigate);
+			oNavContainer.backToPage(this.byId("idPageCreate").getId());
+		},
+
+		/**
+		 * Event handler when field value is changed for 'input' or 'select' element.
+		 * @param {object} oEvent Contains event object of control.
+		 */
+		onChangeFieldValue: function (oEvent) {
+			// Check wizard steps
+			var oWizardCtrl = this.byId("idWizard");
+			var sCurrentStep = oWizardCtrl.getCurrentStep();
+
+			// Materials Step: Validation of fields.
+			if (sCurrentStep.indexOf("idStepMaterials") > -1) {
+				this.byId(sCurrentStep).setValidated(this._fnValidateMaterials() && this.fnCheckMsManager());
+			}
+			// Request Details Step: Validation of fields.
+			if (sCurrentStep.indexOf("idStepReqDetails") > -1) {
+				this.byId(sCurrentStep).setValidated(this._fnValidateMaterials() && this._fnValidateReqDetails() && this.fnCheckMsManager());
+			}
+			// Approver Step: Validation of fields.
+			if (sCurrentStep.indexOf("idStepApprover") > -1) {
+				var isValidated = this._fnValidateMaterials() && this._fnValidateReqDetails() && this.fnValidateApprovers() && this.fnCheckMsManager();
+				this.byId(sCurrentStep).setValidated(isValidated);
+			}
+		},
+
+		/**
+		 * Event handler for add plant
+		 * @param {object} oEvent Contains button event object
+		 */
+		onAddPlant: function (oEvent) {
+			var oSelectedItem = oEvent.getParameter("selectedItem");
+			var oParam = oSelectedItem.getBindingContext("F4DropdownMRF").getObject();
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+
+			// Check if list of material, charging details is empty, else prompt pop-up warning for overwrite.
+			if (oPayload.NavTo_MRFHeader_Items.length > 0 || oPayload.Chargeto) {
+				this.showMsgBoxWarning(this.getResourceBundle().getText("warningMsgPlanSelect"))
+					.then(function () {
+						var oClearMatrChargeDetails = this._fnClearMatrAndChargeDetail(oPayload);
+						this.fnTotalMatrQty();
+						this._fnUpdatePlant(oClearMatrChargeDetails, oParam);
+					}.bind(this));
+			} else {
+				this._fnUpdatePlant(oPayload, oParam);
+			}
+		},
+
+		/**
+		 * Event handler to change value of input control and update local model payload.
+		 * This method will use by wbs, cost center, io number, and subsidy.
+		 * @param {object} oEvent Contains event handler of select dialog.
+		 */
+		onAddChargeDetails: function (oEvent) {
+			var oSelectedItem = oEvent.getParameter("selectedItem");
+			var oParam = oSelectedItem.getBindingContext("F4DropdownMRF").getObject();
+			var oCustomData = oEvent.getSource().data();
+			var oModel = this.fnGetContextModel();
+
+			oModel.setProperty("/" + oCustomData.control_field, oParam[oCustomData.search_field]);
+			oModel.setProperty("/" + oCustomData.control_field_desc, oParam[oCustomData.search_field_desc]);
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Event handler for changing province
+		 * @param {object} oEvent Contains button event object
+		 * @public
+		 */
+		onAddItemDialog: function (oEvent) {
+			var oSelectedItem = oEvent.getParameter("selectedItem");
+			var oSelectedParam = oSelectedItem.getBindingContext("F4DropdownMRF").getObject();
+			var oCustomData = oEvent.getSource().data();
+			var oModel = this.fnGetContextModel();
+			var oBindingContext = this.fnGetBindingContext(this._inputCtrl);
+			var sPath = oBindingContext.getPath();
+			var oPayload = oBindingContext.getObject();
+
+			oPayload[oCustomData.control_field] = oSelectedParam[oCustomData.control_field];
+			oPayload[oCustomData.control_field_desc] = oSelectedParam[oCustomData.control_field_desc];
+
+			if (oCustomData.control_field === "ProvinceCode") {
+				oPayload.CityCode = "";
+				oPayload.CityDesc = "";
+				oPayload.BarangayCode = "";
+				oPayload.BarangayText = "";
+			}
+			if (oCustomData.control_field === "BarangayCode") {
+				oPayload.ZipCode = oSelectedParam.ZipCode;
+				oPayload.CityCode = oSelectedParam.CityCode;
+				oPayload.CityDesc = oSelectedParam.CityDesc;
+				oPayload.ProvinceCode = oSelectedParam.ProvinceCode;
+				oPayload.ProvinceDesc = oSelectedParam.ProvinceDesc;
+			}
+			if (oCustomData.control_field === "CityCode") {
+				oPayload.ZipCode = "";
+				oPayload.BarangayCode = "";
+				oPayload.BarangayText = "";
+				oPayload.ProvinceCode = oSelectedParam.ProvinceCode;
+				oPayload.ProvinceDesc = oSelectedParam.ProvinceDesc;
+			}
+
+			oModel.setProperty(sPath, oPayload);
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Event handler to reset different fields according to selected value in charging details.
+		 * @param {object} oEvent Contains event object of control.
+		 */
+		onChangeChargeOpex: function (oEvent) {
+			var sType = oEvent.getSource().data("type");
+			var oModel = this.fnGetContextModel();
+			var oProp = oModel.getProperty("/");
+
+			if (sType === "charge") {
+				// Reset only Open Type dropdown if source control is Charge To.
+				oProp.Opex = "";
+				oProp.OpexDesc = "";
+			}
+			oProp.Wbs = "";
+			oProp.WbsDesc = "";
+			oProp.Kostl = "";
+			oProp.KostlDesc = "";
+			oProp.Aufnr = "";
+			oProp.OrderDesc = "";
+			oProp.Subsidy = "";
+			oProp.SubsidyDesc = "";
+			oProp.Saknr = "";
+			oProp.SaknrDesc = "";
+
+			oModel.setProperty("/", oProp);
+			this.onAddComboBoxDesc(oEvent);
+		},
+
+		/**
+		 * Event handler to reset Receiving Sloc.
+		 * @param {object} oEvent Contains event object of control.
+		 */
+		onChangePurposeOfReq: function (oEvent) {
+			var oContextModel = this.fnGetContextModel();
+			var oContextProp = oContextModel.getProperty("/");
+
+			// Reset Receiving SLoc if != 'Warehouse to Contractor' or 'Warehouse to Warehouse'.
+			if (oContextProp.Purpose !== 'WC' && oContextProp.Purpose !== 'WW') {
+				oContextProp.ReceiveSLoc = "";
+				oContextModel.setProperty("/", oContextProp);
+			}
+
+			this.onAddComboBoxDesc(oEvent);
+		},
+
+		/**
+		 * Event handler when switch of Multiple Delivery address is clicked.
+		 * @param {object} oEvent Contains the switch event handler.
+		 */
+		onPressMultipleDelAdd: function (oEvent) {
+			var bSelected = oEvent.getParameter("state");
+			var oModel = this.fnGetContextModel();
+
+			// Update payload model.
+			if (bSelected) {
+				oModel.setProperty("/Delivaddress", "");
+				// { Start of change MS212205 PAL-2022-001
+				oModel.setProperty("/ProvinceCode", "");
+				oModel.setProperty("/ProvinceDesc", "");
+				oModel.setProperty("/CityCode", "");
+				oModel.setProperty("/CityDesc", "");
+				oModel.setProperty("/BarangayCode", "");
+				oModel.setProperty("/BarangayText", "");
+				oModel.setProperty("/ZipCode", "");
+				// } End of change MS212205 PAL-2022-001
+				oModel.setProperty("/Contactperson", "");
+				oModel.setProperty("/Contactnumber", "");
+				oModel.setProperty("/Email", "");
+				oModel.setProperty("/OthContPerson", false);
+				oModel.setProperty("/OthContName", "");
+				oModel.setProperty("/OthContNumber", "");
+				oModel.setProperty("/OthEmail", "");
+			} else {
+				var oProp = oModel.getProperty("/");
+				oProp.NavTo_MRFHeader_Items.forEach(function (oItem) {
+					oItem.Delivaddress = "";
+					oItem.Contactperson = "";
+					oItem.Contactnumber = "";
+				});
+				oModel.setProperty("/", oProp);
+			}
+
+			// Validate fields
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Event handler when switch of alternate contact person is clicked.
+		 * @param {object} oEvent Contains the switch event handler.
+		 */
+		onPressAlternateContact: function (oEvent) {
+			var bSelected = oEvent.getParameter("state");
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+
+			// Update model.
+			oPayload.OthContPerson = bSelected;
+
+			// Update payload model.
+			if (!bSelected) {
+				oPayload.OthContName = "";
+				oPayload.OthContNumber = "";
+				oPayload.OthEmail = "";
+			}
+
+			oModel.setProperty("/", oPayload);
+
+			// Special case: We need to manually remove the value of Other Email on Input control.
+			this.byId("idOtherEamil").setValue("");
+
+			// Validate fields
+			this.onChangeFieldValue();
+		},
+
+		/**
+		 * Event handler to trigger OData SubmitChanges method when Save Draft or Submit button is clicked.
+		 * @param {object} oEvent Contains the button event handler.
+		 */
+		onSaveRecord: function (oEvent) {
+			this._sType = oEvent.getSource().data("action_type");
+
+			this.setBusyDialogOn();
+			this._fnRequestHeaderLineItem(this._sType)
+				.then(this.fnRequestSubmitChanges.bind(this))
+				.then(this.fnSuccessSubmit.bind(this))
+				.then(this.onCheckAttachment.bind(this))
+				.catch(this.fnCatchRequestError.bind(this));
+		},
+
+		/**
+		 * Event handler to send an attachment as a separate request.
+		 * @param {object} oData Contains the return payload object from CREATE DEEP entity
+		 */
+		onCheckAttachment: function (oData) {
+			return new Promise(function (fnResolve, fnReject) {
+				var oPayloadReturn = oData.__batchResponses[0].__changeResponses[0].data;
+				var oContextModel = this.fnGetContextModel();
+				var oContextProp = oContextModel.getProperty("/");
+
+				// Check if attachment has data. Otherwise, dislay a success message.
+				if (oContextProp["NavTo_MRFHeader_Attachment"].length > 0) {
+					this._fnRequestAttachment(oData)
+						.then(this.fnRequestSubmitChanges.bind(this))
+						.then(this.fnSuccessSubmit.bind(this))
+						.then(this._fnShowSuccessRequestMsg.bind(this))
+						.catch(this._fnCatchRequestErrorAttachment.bind(this, oPayloadReturn));
+				} else {
+					this._fnShowSuccessRequestMsg(oData);
+				}
+			}.bind(this));
+		},
+
+		/* =========================================================== */
+		/* begin: internal methods                                     */
+		/* =========================================================== */
+
+		/**
+		 * Get the context model object
+		 * @public
+		 */
+		fnGetContextModel: function () {
+			return this.getView().getModel("createMRF");
+		},
+
+		/**
+		 * Get the binding context
+		 * @param {object} oSource Contains the source control.
+		 * @public
+		 */
+		fnGetBindingContext: function (oSource) {
+			return oSource.getBindingContext("createMRF");
+		},
+
+		/**
+		 * Initial local model for the controller.
+		 * @private
+		 */
+		_fnInitPayloadModel: function () {
+			this._fnGetUserInfo().then(function (oUser) {
+				var oModel = Model.createMRFModel();
+				oModel.setSizeLimit(300);
+				oModel.oData.Email = oUser.results[0].Emailadd;
+				this.getView().setModel(oModel, "createMRF");
+				this.getView().bindElement("createMRF>/");
+			}.bind(this));
+		},
+
+		_fnGetUserInfo: function () {
+			var oData = this.getOwnerComponent().getModel("RequestorModel");
+			return new Promise(function (oResolve, oReject) {
+				oData.read("/UserInfoSet", {
+					success: function (oResult) {
+						oResolve(oResult);
+					},
+					error: function (oError) {
+						oReject(oError);
+					}
+				});
+			});
+		},
+
+		/**
+		 * Reset control state.
+		 * @private
+		 */
+		_fnResetControls: function () {
+			var oNavContainer = this.byId("idNavContainer");
+			var oWizard = this.byId("idWizard");
+			var oStepMatr = this.byId("idStepMaterials");
+			oWizard.discardProgress(oStepMatr);
+			oStepMatr.setValidated(false);
+			oNavContainer.backToPage(this.byId("idPageCreate").getId());
+		},
+
+		/**
+		 * Validate required fields for Material Step.
+		 * @private
+		 */
+		_fnValidateMaterials: function () {
+			var oModel = this.fnGetContextModel();
+			var oProp = oModel.getProperty("/");
+			var bValidate = true;
+
+			// Check header level
+			if (!oProp.Atwrt || !oProp.Werks) {
+				bValidate = false;
+			}
+			// Check line items
+			if (oProp.NavTo_MRFHeader_Items.length > 0) {
+				if (oProp.IsMultiple) {
+					oProp.NavTo_MRFHeader_Items.forEach(function (oItem, iIdx) {
+						// Start of change MS223343 - FD2K900081
+						if (!oItem.Delivaddress || !oItem.Contactperson || !oItem.Contactnumber || !oItem.ProvinceDesc || !oItem.CityDesc || !oItem.BarangayText) {
+							bValidate = false;
+							return;
+						}
+						// End of change MS223343 - FD2K900081
+					});
+				} else {
+					bValidate = true;
+				}
+			} else {
+				bValidate = false;
+			}
+
+			return bValidate;
+		},
+
+		/**
+		 * Validate required fields for Request Details Step.
+		 * @private
+		 */
+		_fnValidateReqDetails: function () {
+			var aValidateRequestDetails = Validator.fnValidateForm(this.byId("idSimpleFormRequestDetails"), this);
+			if (aValidateRequestDetails.length > 0) {
+				return false;
+			}
+			return true;
+		},
+
+		/**
+		 * Update local model when selecting or modifying field for Plant.
+		 * @param {object} oPayload Contains the object of local model.
+		 * @param {object} oParams Contains the selected object of plant.
+		 * @private
+		 */
+		_fnUpdatePlant: function (oPayload, oParams) {
+			var oModel = this.fnGetContextModel();
+
+			oPayload.Werks = oParams.Plant;
+			oPayload.PlantDesc = oParams.PlantName;
+			oModel.setProperty("/", oPayload);
+		},
+
+		/**
+		 * Clear selected materials in local model.
+		 * @private
+		 */
+		_fnClearMaterial: function () {
+			var oModel = this.fnGetContextModel();
+			oModel.setProperty("/NavTo_MRFHeader_Items", []);
+		},
+
+		/**
+		 * Clear material line items and its charging details.
+		 * @param {object} oPayload Contains the payload object.
+		 * @return {object} Returns the modified payload.
+		 * @private
+		 */
+		_fnClearMatrAndChargeDetail: function (oPayload) {
+			// Clear material
+			oPayload.NavTo_MRFHeader_Items = [];
+
+			// Clear charging details
+			oPayload.Chargeto = "";
+			oPayload.Opex = "";
+			oPayload.OpexDesc = "";
+			oPayload.Wbs = "";
+			oPayload.WbsDesc = "";
+			oPayload.Kostl = "";
+			oPayload.KostlDesc = "";
+			oPayload.Aufnr = "";
+			oPayload.OrderDesc = "";
+			oPayload.Subsidy = "";
+			oPayload.SubsidyDesc = "";
+			oPayload.Saknr = "";
+			oPayload.SaknrDesc = "";
+
+			return oPayload;
+		},
+
+		/**
+		 * Set default approval based on select commodity type.
+		 * @param {string} sKey Contains the Commodity type.
+		 */
+		_fnSetDefaultApprovers: function (sKey) {
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+			var aParam = [];
+
+			if (jQuery.inArray(sKey, this._aCommodity) > -1) {
+				aParam = [{
+					Zlevel: "1",
+					Apvtype: Constant.APPROVER_IS
+				}, {
+					Zlevel: "2",
+					Apvtype: Constant.APPROVER_ALLOCATOR,
+					Email: this.getResourceBundle().getText("dcmLim")
+				}, {
+					Zlevel: "3",
+					Apvtype: Constant.APPROVER_FBA
+				}, {
+					Zlevel: "4",
+					Apvtype: Constant.APPROVER_PROCESSOR,
+					Email: this.getResourceBundle().getText("palProcessTeam")
+				}];
+			} else {
+				aParam = [{
+					Zlevel: "1",
+					Apvtype: Constant.APPROVER_IS
+				}, {
+					Zlevel: "2",
+					Apvtype: Constant.APPROVER_PROCESSOR,
+					Email: this.getResourceBundle().getText("palProcessTeam")
+				}];
+			}
+			// Add placeholder fields
+			aParam.forEach(function (oItem) {
+				oItem.Sapid = "";
+				oItem.Name = "";
+				oItem.Editable = false;
+			});
+			// Update model
+			oPayload.NavTo_MRFHeader_Approver = aParam;
+			oModel.setProperty("/", oPayload);
+		},
+
+		/**
+		 * Check if there are valid entry for uploaded materials and asks for confirmation.
+		 * @param {object} oResult Contains list of materials and error message.
+		 * @private
+		 */
+		_fnCheckMatrData: function (oResult) {
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+
+			if (oResult.materials.length > 0) {
+				if (oPayload.NavTo_MRFHeader_Items.length > 0) {
+					this.showMsgBoxWarning(this.getResourceBundle().getText("warningMsgMatSelect"))
+						.then(this._fnStoreMatrData.bind(this, oResult))
+						.catch(function () {});
+				} else {
+					this._fnStoreMatrData(oResult);
+				}
+
+			} else {
+				this.showMsgBoxError(oResult.error);
+			}
+		},
+
+		/**
+		 * Update the material line item based from the valid entry of uploaded materials.
+		 * @param {object} oResult Contains list of materials and error message.
+		 * @private
+		 */
+		_fnStoreMatrData: function (oResult) {
+			var oModel = this.fnGetContextModel();
+			var oPayload = oModel.getProperty("/");
+
+			// 1. Clear the materials in local model.
+			this._fnClearMaterial();
+
+			// 2. Assign new entry
+			oPayload.NavTo_MRFHeader_Items = oResult.materials;
+
+			// 3. Validate fields, update qty and model.
+			this.onChangeFieldValue();
+			this.fnTotalMatrQty();
+			oModel.setProperty("/", oPayload);
+			oModel.refresh(true);
+
+			// 4. Display error for invalid material.
+			if (oResult.error) {
+				this.showMsgBoxError(oResult.error);
+			}
+		},
+
+		/**
+		 * Request a Deep Create for Header and Line Items of MRF (Defferred Mode).
+		 * @param {string} sStatus Contains the type of submission (Draft or Submit).
+		 * @return {object} Returns Promise solved with empty parameter.
+		 * @private
+		 */
+		_fnRequestHeaderLineItem: function (sStatus) {
+			var oPayload = this.fnBuildPayload(sStatus);
+
+			this.getModel().create("/MRFHeaderSet", oPayload, {
+				groupId: Constant.ODATA_GROUP_ID
+			});
+
+			return Promise.resolve(oPayload);
+		},
+
+		/**
+		 * Request a Batch for Mutiple attachments (Defferred Mode).
+		 * @private
+		 */
+		_fnRequestAttachment: function (oData) {
+			return new Promise(function (fnResolve, fnReject) {
+				var aPromises = [];
+				var sMRFId = oData.__batchResponses[0].__changeResponses[0].data.Recnum;
+				var oModel = this.fnGetContextModel();
+				var aAttachments = oModel.getProperty("/NavTo_MRFHeader_Attachment");
+				aAttachments.forEach(function (oItem) {
+					oItem.Recnum = sMRFId;
+					aPromises.push(new Promise(function (resolve, reject) {
+						this.fnReadAttachment(oItem)
+							.then(this.fnBuildBase64Attchment.bind(this, oItem))
+							.then(this.fnRequestAttachment.bind(this, oItem))
+							.then(function () {
+								// Resolve Inner Request Promise per file read.
+								resolve();
+							});
+					}.bind(this)));
+				}.bind(this));
+
+				// Resolve Outer Promise
+				Promise.all(aPromises).then(function () {
+					fnResolve(aAttachments);
+				});
+			}.bind(this));
+		},
+
+		/**
+		 * Build payload for Create MRF Request
+		 * @param {int} iStatus Contains int value either 'Draft' or 'Submit'
+		 * @return {object} Return payload for Deep Create Request.
+		 * @private
+		 */
+		fnBuildPayload: function (sStatus) {
+			var oModel = this.fnGetContextModel();
+			var oPropLocal = oModel.getProperty("/");
+			oPropLocal.UserDecision = sStatus;
+
+			var oCopyProp = jQuery.extend(true, {}, oPropLocal);
+			oCopyProp.OthContPerson = JSON.parse(oCopyProp.OthContPerson);
+			oCopyProp.IsMultiple = JSON.parse(oCopyProp.IsMultiple);
+			delete oCopyProp.NavTo_MRFHeader_Attachment;
+
+			// Loop line item materials
+			oCopyProp.NavTo_MRFHeader_Items.forEach(function (oItem) {
+				oItem.Quantity = oItem.Quantity.toString();
+			});
+
+			// URL Email
+			oCopyProp.RequestorUrl = URL.fnBuildFioriAccessURL(Constant.REQUESTOR_SEMOBJ, Constant.NAV_EDIT_MRF);
+			oCopyProp.ApproverUrl = URL.fnBuildFioriAccessURL(Constant.APPROVER_SEMOBJ, Constant.NAV_APPROVE_MRF);
+			oCopyProp.ReportUrl = URL.fnBuildFioriAccessURL(Constant.REPORT_SEMOBJ, Constant.NAV_REPORT_MRF);
+
+			return oCopyProp;
+		},
+
+		/**
+		 * Event handler to trigger a DELETE request when attachment request failed.
+		 * @param {object} oPayload Contains the payload of attachment request
+		 * @param {string} sError Contains error in string format.
+		 * @private
+		 */
+		_fnCatchRequestErrorAttachment: function (oPayload, sError) {
+			// Check if there is an MRF ID
+			if (oPayload) {
+				// Execute delete of MRF Header, if an error is encoutered during submission of attachment.
+				this.fnRequestDeleteMRF(oPayload)
+					.then(this.fnRequestSubmitChanges.bind(this))
+					.then(this.fnSuccessSubmit.bind(this))
+					.then(this.fnCatchRequestError.bind(this, sError));
+			}
+		},
+
+		/**
+		 * Callback function, after a success submission.
+		 * It display a confirmation message and a routing to home page.
+		 * @param {object} oData Contains the data of the newly created entry if it is provided by the backend.
+		 * @private
+		 */
+		_fnShowSuccessRequestMsg: function (oData) {
+			var sMsgTitle = this._sType === "Draft" ? "successSaveDraftTitle" : "successSaveSubmitTitle";
+			var sMsgText = this._sType === "Draft" ? "successSaveDraftContentText" : "successSaveSubmitContentText";
+
+			this.setBusyDialogOff();
+			this.fnRemoveMsgManager();
+
+			var sMRFId = oData.__batchResponses[0].__changeResponses[0].data.Recnum;
+			this.showDialogMessage({
+				titleMsg: this.getResourceBundle().getText(sMsgTitle),
+				contentMsg: this.getResourceBundle().getText(sMsgText, [sMRFId])
+			}).then(function () {
+				// Navigate to dashobard page
+				this.fnNavigateToReport(this._sRouteReport);
+				// Set component property model for the navigation tab if tpye of submission is 'Submit'.
+				if (this._sType === "Submit") {
+					this.getOwnerComponent().getModel("navTabUpdate").setProperty("/currentTab", Constant.REPORT_FOR_APPROVAL_TAB);
+				} else {
+					this.getOwnerComponent().getModel("navTabUpdate").setProperty("/currentTab", Constant.REPORT_DEFAULT_TAB);
+				}
+			}.bind(this));
+		}
+	});
+});

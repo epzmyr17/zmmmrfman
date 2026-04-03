@@ -1,0 +1,27 @@
+/* Enter your custom styles here */
+.mrf-title-border-bottom.sapMIBar.sapMTB.sapMTB-Transparent-CTX.sapMTBInactive.sapMTBNewFlex {
+    border-bottom: 1px solid #cccccc;
+}
+
+.mrf-icon-tab-no-border-bottom .sapMITH {
+    border-bottom: none;
+    box-shadow: none;
+    background: none;
+}
+
+.mrf-icon-tab-no-border-bottom .sapMITBContent {
+    border-bottom: none;
+}
+
+.mrf-icon-tab-no-margin .sapMITBScrollContainer {
+    margin-left: 0 !important;
+}
+
+.mrf-dynamic-page-header.sapFDynamicPageHeader.sapFDynamicPageHeaderPinnable {
+    padding-bottom: 0;
+    padding-left: 50;
+}
+
+.mrf-daterange-input-disable input {
+    pointer-events: none;
+}

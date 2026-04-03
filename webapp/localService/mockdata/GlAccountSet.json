@@ -1,0 +1,19 @@
+[{
+	"Bukrs": "Bukrs 1",
+	"Saknr": "Saknr 1",
+	"Txt50": "Txt50 1",
+	"Plant": "1000",
+	"__metadata": {
+		"uri": "GlAccountSet(Bukrs='Bukrs%201',Saknr='Saknr%201')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.GlAccount"
+	}
+}, {
+	"Bukrs": "Bukrs 2",
+	"Saknr": "Saknr 2",
+	"Txt50": "Txt50 2",
+	"Plant": "1000",
+	"__metadata": {
+		"uri": "GlAccountSet(Bukrs='Bukrs%202',Saknr='Saknr%202')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.GlAccount"
+	}
+}]

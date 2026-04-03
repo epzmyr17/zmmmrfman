@@ -1,0 +1,21 @@
+[{
+	"Kunnr": "Kunnr 1",
+	"Name1": "Name1 1",
+	"Name2": "Name2 1",
+	"Plant": "1000",
+	"Bukrs": "Bukrs 1",
+	"__metadata": {
+		"uri": "SubsidyCodeSet('Kunnr%201')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.SubsidyCode"
+	}
+}, {
+	"Kunnr": "Kunnr 2",
+	"Name1": "Name1 2",
+	"Name2": "Name2 2",
+	"Plant": "1000",
+	"Bukrs": "Bukrs 2",
+	"__metadata": {
+		"uri": "SubsidyCodeSet('Kunnr%202')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.SubsidyCode"
+	}
+}]

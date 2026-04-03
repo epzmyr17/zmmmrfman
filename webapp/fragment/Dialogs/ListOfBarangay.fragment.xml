@@ -1,0 +1,15 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<SelectDialog noDataText="{i18n>NoBrgyFound}" title="{i18n>listOfBarangay}" search="onSearchF4ValueFilter" confirm="onAddItemDialog"
+		multiSelect="false" items="{ path: 'F4DropdownMRF>/BrgySet' }">
+		<items>
+			<StandardListItem title="{F4DropdownMRF>BarangayText}" description="{F4DropdownMRF>CityDesc}, {F4DropdownMRF>ProvinceDesc}" type="Active"/>
+		</items>
+		<customData>
+			<core:CustomData key="search_field" value="BarangayCode"/>
+			<core:CustomData key="search_field_desc" value="BarangayText"/>
+			<core:CustomData key="search_field_filter1" value="CityCode"/>
+			<core:CustomData key="control_field" value="BarangayCode"/>
+			<core:CustomData key="control_field_desc" value="BarangayText"/>
+		</customData>
+	</SelectDialog>
+</core:FragmentDefinition>

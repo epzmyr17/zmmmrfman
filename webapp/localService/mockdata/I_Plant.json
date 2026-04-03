@@ -1,0 +1,33 @@
+[{
+	"Plant": "1000",
+	"PlantName": "Globe Telecom",
+	"ValuationArea": "ValuationArea 1",
+	"PlantCustomer": "PlantCustomer 1",
+	"PlantSupplier": "PlantSupplier 1",
+	"FactoryCalendar": "FactoryCalendar 1",
+	"DefaultPurchasingOrganization": "DefaultPurchasingOrganization 1",
+	"SalesOrganization": "SalesOrganization 1",
+	"AddressID": "AddressID 1",
+	"PlantCategory": "PlantCategory 1",
+	"DistributionChannel": "DistributionChannel 1",
+	"__metadata": {
+		"uri": "I_Plant('Plant%201')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.I_PlantType"
+	}
+}, {
+	"Plant": "2000",
+	"PlantName": "Bayan DSL",
+	"ValuationArea": "ValuationArea 2",
+	"PlantCustomer": "PlantCustomer 2",
+	"PlantSupplier": "PlantSupplier 2",
+	"FactoryCalendar": "FactoryCalendar 2",
+	"DefaultPurchasingOrganization": "DefaultPurchasingOrganization 2",
+	"SalesOrganization": "SalesOrganization 2",
+	"AddressID": "AddressID 2",
+	"PlantCategory": "PlantCategory 2",
+	"DistributionChannel": "DistributionChannel 2",
+	"__metadata": {
+		"uri": "I_Plant('Plant%202')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.I_PlantType"
+	}
+}]

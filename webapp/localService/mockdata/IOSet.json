@@ -1,0 +1,19 @@
+[{
+	"Aufnr": "Aufnr 1",
+	"Ktext": "Ktext 1",
+	"Bukrs": "Bukrs 1",
+	"Plant": "1000",
+	"__metadata": {
+		"uri": "IOSet('Aufnr%201')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.IO"
+	}
+}, {
+	"Aufnr": "Aufnr 2",
+	"Ktext": "Ktext 2",
+	"Bukrs": "Bukrs 2",
+	"Plant": "1000",
+	"__metadata": {
+		"uri": "IOSet('Aufnr%202')",
+		"type": "ZMMM_OP_MRF_HELP_SRV.IO"
+	}
+}]

@@ -1,0 +1,205 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form" class="sapUiContentPadding">
+	<f:SimpleForm id="idSimpleFormRequestDetails" editable="true" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="12"
+		labelSpanS="12" adjustLabelSpan="false" emptySpanXL="4" emptySpanL="4" emptySpanM="4" emptySpanS="0" columnsXL="1" columnsL="1" columnsM="1"
+		singleContainerFullSize="false">
+		<f:content>
+			<Toolbar class="mrf-title-border-bottom">
+				<Title text="{i18n>purposeDetails}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Label text="{i18n>purposeOfReq}" required="true"/>
+			<Select forceSelection="false" items="{F4DropdownMRF>/RequestPurposeSet}" selectedKey="{createMRF>Purpose}" change="onChangePurposeOfReq">
+				<items>
+					<core:Item text="{F4DropdownMRF>Purpose}" key="{F4DropdownMRF>Id}"/>
+				</items>
+				<customData>
+					<core:CustomData key="control_field_desc" value="PurposeDesc"/>
+				</customData>
+			</Select>
+			<!-- Display Rec.Sloc if Purpose of Req = Warehouse to Warehouse or Warehouse to Contractor -->
+			<Label text="{i18n>receivingSloc}" required="true" visible="{=${createMRF>Purpose} === 'WC' || ${createMRF>Purpose} === 'WW'}"/>
+			<Input value="{createMRF>ReceiveSLoc}" placeholder="{i18n>enterReceivingSloc}" required="true" change="onChangeFieldValue"
+				visible="{=${createMRF>Purpose} === 'WC' || ${createMRF>Purpose} === 'WW'}"
+				maxLength="{path:'/#MRFHeader/ReceiveSLoc/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<Label text="{i18n>justificationOfReq}" required="true"/>
+			<TextArea showExceededText="false"
+				value="{ path: 'createMRF>Justification' , type: 'sap.ui.model.type.String', constraints: { minLength: 1}}" change="onChangeFieldValue"
+				placeholder="{i18n>enterJustification}" required="true"
+				maxLength="{path:'/#MRFHeader/Justification/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<Toolbar class="mrf-title-border-bottom">
+				<Title text="{i18n>chargingDetails}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Label text="{i18n>chargeTo}" required="true"/>
+			<Select forceSelection="false" selectedKey="{createMRF>Chargeto}" change="onChangeChargeOpex" items="{F4DropdownMRF>/ChargeTypeSet}">
+				<items>
+					<core:Item text="{F4DropdownMRF>Charge}" key="{F4DropdownMRF>Id}"/>
+				</items>
+				<customData>
+					<core:CustomData key="type" value="charge"/>
+					<core:CustomData key="control_field_desc" value="ChargeToDesc"/>
+				</customData>
+			</Select>
+			<Label text="{i18n>wbsElemCode}" visible="{=${createMRF>Chargeto} === 'CAPEX'}" required="true"/>
+			<Input value="{ path: 'createMRF>Wbs' , type: 'sap.ui.model.type.String', constraints: { minLength: 1}}" id="idInputWBSCode"
+				placeholder="{i18n>placeHolderWbsElemCode}" required="true" visible="{=${createMRF>Chargeto} === 'CAPEX'}" showValueHelp="false"
+				valueHelpOnly="false" valueHelpRequest="onOpenDialog" change="onChangeFieldValue"
+				maxLength="{path:'/#MRFHeader/Wbs/@maxLength', formatter:'.formatter.fnGetMaxLength'}">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfWBSCode"/>
+					<core:CustomData key="variable_name" value="_oListOfWBSCode"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>opexType}" visible="{=${createMRF>Chargeto} === 'OPEX'}" required="true"/>
+			<Select items="{F4DropdownMRF>/OpexTypeSet}" visible="{=${createMRF>Chargeto} === 'OPEX'}" forceSelection="false"
+				selectedKey="{createMRF>Opex}" change="onChangeChargeOpex">
+				<items>
+					<core:Item text="{F4DropdownMRF>Type}" key="{F4DropdownMRF>Id}"/>
+				</items>
+				<customData>
+					<core:CustomData key="type" value="opex"/>
+					<core:CustomData key="control_field_desc" value="OpexDesc"/>
+				</customData>
+			</Select>
+			<Label text="{i18n>ioNumberCode}" visible="{=${createMRF>Opex} === 'IO' &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}" required="true"/>
+			<Input value="{ path: 'createMRF>Aufnr' , type: 'sap.ui.model.type.String', constraints: { minLength: 1}}" id="idInputIONumber"
+				placeholder="{i18n>placeholderIoNumberCode}" required="true"
+				visible="{=${createMRF>Opex} === 'IO' &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}" showValueHelp="false" valueHelpOnly="false"
+				valueHelpRequest="onOpenDialog" change="onChangeFieldValue"
+				maxLength="{path:'/#MRFHeader/Aufnr/@maxLength', formatter:'.formatter.fnGetMaxLength'}">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfIONumCode"/>
+					<core:CustomData key="variable_name" value="_oListOfIONumCode"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>glAccount}"
+				visible="{=(${createMRF>Opex} === 'CC' || ${createMRF>Opex} === 'IO') &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}" required="false"/>
+			<Input value="{createMRF>Saknr}" id="idInputGLAccount" placeholder="{i18n>enterGLAccount}" required="false"
+				visible="{=(${createMRF>Opex} === 'CC' || ${createMRF>Opex} === 'IO') &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}" showValueHelp="true"
+				valueHelpOnly="true" valueHelpRequest="onOpenDialog">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfGLAccount"/>
+					<core:CustomData key="variable_name" value="_oListOfGLAccount"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>costCenterCode}"
+				visible="{=(${createMRF>Opex} === 'CC' || ${createMRF>Opex} === 'IO') &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}"
+				required="{=${createMRF>Opex} === 'IO' ? false : true}"/>
+			<!-- Modify minlength of constraint to 0 to prevent value state error when field is not required -->
+			<Input value="{path: 'createMRF>Kostl', type: 'sap.ui.model.type.String', constraints: { minLength: 0}}" id="idInputCostCenter"
+				placeholder="{i18n>placeholderCostCenterCode}" required="{=${createMRF>Opex} === 'IO' ? false : true}"
+				visible="{=(${createMRF>Opex} === 'CC' || ${createMRF>Opex} === 'IO') &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}" showValueHelp="false"
+				valueHelpOnly="false" valueHelpRequest="onOpenDialog" change="onChangeFieldValue"
+				maxLength="{path:'/#MRFHeader/Kostl/@maxLength', formatter:'.formatter.fnGetMaxLength'}">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfCostCenter"/>
+					<core:CustomData key="variable_name" value="_oListOfCostCenter"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>subsidyCode}" visible="{=${createMRF>Opex} === 'SUBS' &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}" required="true"/>
+			<Input value="{createMRF>Subsidy}" id="idInputSubsidy" placeholder="{i18n>placeholderSubsidyCode}" required="true"
+				visible="{=${createMRF>Opex} === 'SUBS' &amp;&amp; ${createMRF>Chargeto} === 'OPEX'}" showValueHelp="true" valueHelpOnly="true"
+				valueHelpRequest="onOpenDialog">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfSubsidy"/>
+					<core:CustomData key="variable_name" value="_oListOfSubsidy"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>specialInst}"/>
+			<TextArea value="{ path: 'createMRF>Instructions'}" showExceededText="false" change="onChangeFieldValue"
+				placeholder="{i18n>enterInstruction}" required="false"
+				maxLength="{path:'/#MRFHeader/Instructions/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<Toolbar class="mrf-title-border-bottom">
+				<Title text="{i18n>deliveryDetails}" level="H5" titleStyle="H5"/>
+			</Toolbar>
+			<Label text="{i18n>modeOfDelivery}" required="true"/>
+			<Select forceSelection="false" id="country" items="{F4DropdownMRF>/DeliveryModeSet}" selectedKey="{createMRF>Delivmode}"
+				change="onAddComboBoxDesc">
+				<items>
+					<core:Item text="{F4DropdownMRF>Delivmode}" key="{F4DropdownMRF>Id}"/>
+				</items>
+				<customData>
+					<core:CustomData key="control_field_desc" value="DelivModeDesc"/>
+				</customData>
+			</Select>
+			<Label text="{i18n>deliveryAdd}" required="true" visible="{=!${createMRF>/IsMultiple}}"/>
+			<TextArea value="{ path : 'createMRF>Delivaddress', type: 'sap.ui.model.type.String', constraints: { minLength: 1}}"
+				change="onChangeFieldValue" visible="{=!${createMRF>/IsMultiple}}" placeholder="{i18n>enterAddress}" required="true"
+				maxLength="{path:'/#MRFHeader/Delivaddress/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<!--Start of edit - MS223343 - PAL-2022-004-->
+			<Label text="{i18n>provinceDesc}" required="true"
+				visible="{= !${createMRF>/IsMultiple} &amp;&amp; ${createMRF>Delivmode} !== '' &amp;&amp; ${createMRF>Delivmode} !== 'P' }"/>
+			<Input value="{path:'createMRF>ProvinceDesc'}"
+				visible="{= !${createMRF>/IsMultiple} &amp;&amp; ${createMRF>Delivmode} !== '' &amp;&amp; ${createMRF>Delivmode} !== 'P' }"
+				placeholder="{i18n>selectProvince}" required="true" change="onChangeFieldValue" valueHelpOnly="true" showValueHelp="true"
+				valueHelpRequest="onOpenDialogFilter">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfProvince"/>
+					<core:CustomData key="variable_name" value="_oListOfProvince"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>cityDesc}" required="true"
+				visible="{= !${createMRF>/IsMultiple} &amp;&amp; ${createMRF>Delivmode} !== '' &amp;&amp; ${createMRF>Delivmode} !== 'P' }"/>
+			<Input value="{path:'createMRF>CityDesc'}"
+				visible="{= !${createMRF>/IsMultiple} &amp;&amp; ${createMRF>Delivmode} !== '' &amp;&amp; ${createMRF>Delivmode} !== 'P' }"
+				placeholder="{i18n>selectCity}" required="true" change="onChangeFieldValue" valueHelpOnly="true" showValueHelp="true"
+				valueHelpRequest="onOpenDialogFilter">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfCity"/>
+					<core:CustomData key="variable_name" value="_oListOfCity"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<Label text="{i18n>barangayDesc}" required="true"
+				visible="{= !${createMRF>/IsMultiple} &amp;&amp; ${createMRF>Delivmode} !== '' &amp;&amp; ${createMRF>Delivmode} !== 'P' }"/>
+			<Input value="{path:'createMRF>BarangayText'}"
+				visible="{= !${createMRF>/IsMultiple} &amp;&amp; ${createMRF>Delivmode} !== '' &amp;&amp; ${createMRF>Delivmode} !== 'P' }"
+				placeholder="{i18n>selectBarangay}" required="true" change="onChangeFieldValue" valueHelpOnly="true" showValueHelp="true"
+				valueHelpRequest="onOpenDialogFilter">
+				<customData>
+					<core:CustomData key="fragment_name" value="ListOfBarangay"/>
+					<core:CustomData key="variable_name" value="_oListOfBarangay"/>
+					<core:CustomData key="searchfield_maxlength" value="10"/>
+				</customData>
+			</Input>
+			<!--End of edit - MS223343 - PAL-2022-004-->
+			<Label text="{i18n>contactPerson}" required="true" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Input value="{ path: 'createMRF>Contactperson' , type: 'sap.ui.model.type.String', constraints: { minLength: 1}}"
+				change="onChangeFieldValue" visible="{=!${createMRF>/IsMultiple}}" placeholder="{i18n>enterContactPerson}" required="true"
+				maxLength="{path:'/#MRFHeader/Contactperson/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<!-- Start of insert by MS223343 - PAL-2024-005 : New field 'Employee ID' -->
+			<Label text="{i18n>employeeID}" required="false" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Input value="{ path: 'createMRF>EmployeeIdNum' , type: 'sap.ui.model.type.String', constraints: { minLength: 1}}"
+				change="onChangeFieldValue" visible="{=!${createMRF>/IsMultiple}}" placeholder="{i18n>enterEmployeeId}" required="false"
+				maxLength="{path:'/#MRFHeader/EmployeeIdNum/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<!-- End of insert by MS223343 - PAL-2024-005 : New field 'Employee ID' -->
+			<Label text="{i18n>contactNumber}" required="true" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Input value="{ path: 'createMRF>Contactnumber' , type: 'sap.ui.model.type.String', constraints: { minLength: 10}}"
+				change="onChangeFieldValue" visible="{=!${createMRF>/IsMultiple}}" placeholder="{i18n>enterContactNum}" required="true"
+				maxLength="{path:'/#MRFHeader/Contactnumber/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<Label text="{i18n>emailAddress}" required="true" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Input value="{ path: 'createMRF>Email' , type: '.types.emailType'}" change="onChangeFieldValue" visible="{=!${createMRF>/IsMultiple}}"
+				placeholder="{i18n>enterEmailAddress}" required="true"
+				maxLength="{path:'/#MRFHeader/Email/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<!-- Alternate contact person -->
+			<Label text="{i18n>alternateContact}" visible="{=!${createMRF>/IsMultiple}}"/>
+			<Switch visible="{=!${createMRF>/IsMultiple}}" change="onPressAlternateContact" state="{createMRF>/OthContPerson}"/>
+			<Label text="{i18n>alternateContactName}" required="false" visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson}}"/>
+			<Input value="{ path: 'createMRF>OthContName'}" change="onChangeFieldValue"
+				visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson}}" placeholder="{i18n>enterAlternateContactName}"
+				required="false" maxLength="{path:'/#MRFHeader/OthContName/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<Label text="{i18n>alternateContactNumber}" required="false" visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson}}"/>
+			<Input value="{ path: 'createMRF>OthContNumber'}" change="onChangeFieldValue"
+				visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson}}" placeholder="{i18n>enterAlternateContactNumber}"
+				required="false" maxLength="{path:'/#MRFHeader/OthContNumber/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+			<Label text="{i18n>alternateContactEmail}" required="false" visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson}}"/>
+			<Input id="idOtherEamil" value="{ path: 'createMRF>OthEmail', type: '.types.emailType'}" change="onChangeFieldValue"
+				visible="{=!${createMRF>/IsMultiple} &amp;&amp; ${createMRF>/OthContPerson}}" placeholder="{i18n>enterAlternateContactEmail}"
+				required="false" maxLength="{path:'/#MRFHeader/OthEmail/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+		</f:content>
+	</f:SimpleForm>
+</core:FragmentDefinition>

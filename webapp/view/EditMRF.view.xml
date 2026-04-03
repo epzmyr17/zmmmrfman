@@ -1,0 +1,116 @@
+<mvc:View controllerName="com.globe.MRF_Manage.controller.EditMRF" xmlns:mvc="sap.ui.core.mvc" xmlns:fb="sap.ui.comp.filterbar"
+	xmlns:vm="sap.ui.comp.variants" xmlns:f="sap.ui.layout.form" displayBlock="true" xmlns:core="sap.ui.core"
+	xmlns:sv="sap.ui.comp.smartvariants" xmlns:uxap="sap.uxap" xmlns:layout="sap.ui.layout" xmlns="sap.m">
+	<uxap:ObjectPageLayout showTitleInHeaderContent="false" showEditHeaderButton="false" alwaysShowContentHeader="true"
+		upperCaseAnchorBar="false" showFooter="{viewConfig>/editable}" id="idObjectPageLayout" selectedSection="idGeneralInfoSection">
+		<uxap:headerTitle>
+			<!--  objectTitle="{i18n>matRequestApv}" objectSubtitle="{Recnum}" -->
+			<uxap:ObjectPageHeader id="idObjectPageHeader" objectTitle="{Status}: {Recnum}" isObjectIconAlwaysVisible="true"
+				isObjectTitleAlwaysVisible="true">
+				<uxap:actions>
+					<!-- Use a JSON binding for visibility of buttons for the fix of mobile overflow when OData model updates -->
+					<ToggleButton type="Emphasized" pressed="{viewConfig>/editable}" text="{=${viewConfig>/editable} ? ${i18n>cancel} : ${i18n>editReq}}"
+						press="onPressEditMRF" visible="{=${StatusId} === '01' || ${StatusId} === '02' || ${StatusId} === '09'}"/>
+					<Button text="{i18n>deleteReq}" press="onPressDeleteMRF" visible="{=${StatusId} === '01'}"/>
+					<Button text="{i18n>cancelReq}" press="onPressCancelMRF"
+						visible="{=${StatusId} === '02' || ${StatusId} === '03' || ${StatusId} === '04' || ${StatusId} === '05' || ${StatusId} === '09'}">
+						<customData>
+							<core:CustomData key="action" value="Cancelled"/>
+						</customData>
+					</Button>
+					<Button text="{i18n>completeReq}" press="onPressCompleteMRF" visible="{=${StatusId} === '10'}">
+						<customData>
+							<core:CustomData key="action" value="Complete"/>
+						</customData>
+					</Button>
+				</uxap:actions>
+				<uxap:breadcrumbs>
+					<Breadcrumbs currentLocationText="{i18n>viewOrEditReq}">
+						<Link text="{i18n>home}" press="onPressHome"/>
+					</Breadcrumbs>
+				</uxap:breadcrumbs>
+			</uxap:ObjectPageHeader>
+		</uxap:headerTitle>
+		<uxap:headerContent>
+			<layout:VerticalLayout>
+				<ObjectStatus title="{i18n>businessEntity}" text="{Werks}"/>
+				<ObjectStatus title="{i18n>commodity}" text="{Atwrt}"/>
+				<ObjectStatus title="{i18n>requestor}" text="{Requestor}"/>
+				<ObjectStatus title="{i18n>total}" text="{parts:[{path:'Amount'}, {path:'i18n>pesoCurreny'}], type:'sap.ui.model.type.Currency'}"/>
+			</layout:VerticalLayout>
+			<layout:VerticalLayout>
+				<ObjectStatus title="{i18n>status}" text="{Status}"/>
+				<ObjectStatus visible="{= ${StatusId}==='01' ? true : false}" title="{i18n>dateCreated}"
+					text="{path: 'CreatedOn', type:'sap.ui.model.type.Date', formatOptions: {style: 'medium'}}"/>
+				<ObjectStatus visible="{= ${StatusId}!=='01' ? true : false}" title="{i18n>dateSubmitted}"
+					text="{path: 'CreatedOn', type:'sap.ui.model.type.Date', formatOptions: {style: 'medium'}}"/>
+				<ObjectStatus title="{i18n>daysElapsed}" text="{DaysElapsed} {i18n>days}"/>
+			</layout:VerticalLayout>
+		</uxap:headerContent>
+		<uxap:sections>
+			<!-- General Info -->
+			<uxap:ObjectPageSection title="{i18n>generalInfo}" id="idGeneralInfoSection">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" ">
+						<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.EditMRF.GeneralInfo" type="XML"/>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+			<!-- Material Info -->
+			<uxap:ObjectPageSection title="{i18n>material}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" ">
+						<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.EditMRF.MaterialInfo" type="XML"/>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+			<!-- Delivery Info -->
+			<uxap:ObjectPageSection title="{i18n>deliveryInfo}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" ">
+						<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.EditMRF.DeliveryInfo" type="XML"/>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+			<!-- Attachments -->
+			<uxap:ObjectPageSection title="{i18n>attacments}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" ">
+						<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.EditMRF.AttachmentInfo" type="XML"/>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+			<!-- Approver -->
+			<uxap:ObjectPageSection title="{i18n>approver}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" ">
+						<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.EditMRF.ApproverInfo" type="XML"/>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+			<!-- Notes -->
+			<uxap:ObjectPageSection title="{i18n>notes}">
+				<uxap:subSections>
+					<uxap:ObjectPageSubSection title=" ">
+						<core:Fragment fragmentName="com.globe.MRF_Manage.fragment.EditMRF.Notes" type="XML"/>
+					</uxap:ObjectPageSubSection>
+				</uxap:subSections>
+			</uxap:ObjectPageSection>
+		</uxap:sections>
+		<uxap:footer>
+			<Toolbar>
+				<ToolbarSpacer/>
+				<Button text="{i18n>saveDraft}" press="onPressSave" visible="{=${StatusId} === '01'}" enabled="{= ${message>/}.length &lt;= 0}">
+					<customData>
+						<core:CustomData key="action_type" value="Draft"/>
+					</customData>
+				</Button>
+				<Button text="{i18n>submit}" type="Emphasized" press="onPressSave" id="idSubmitBtn">
+					<customData>
+						<core:CustomData key="action_type" value="Submit"/>
+					</customData>
+				</Button>
+			</Toolbar>
+		</uxap:footer>
+	</uxap:ObjectPageLayout>
+</mvc:View>

@@ -1,0 +1,271 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:table="sap.ui.table" xmlns:core="sap.ui.core" xmlns:u="sap.ui.unified"
+	xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+	<table:Table id="idSelectedMaterialTable" rows="{ path: 'editMRF>/NavTo_MRFHeader_Items' }" visibleRowCount="7"
+		enableColumnReordering="false" selectionMode="{=${viewConfig>/editable} ? 'MultiToggle' : 'None'}" rowSelectionChange="onSelectTableItem">
+		<table:extension>
+			<OverflowToolbar>
+				<!--Title text="Bleh" level="H5" titleStyle="H5" visible="{= !${device>/system/phone}}"/-->
+				<Button icon="sap-icon://delete" text="Delete" press="onDelete"
+					enabled="{=${viewConfig>/editable} &amp;&amp; ${viewConfig>/materialToolbarDelete}}"></Button>
+				<ToolbarSpacer/>
+				<!--Start of insert - MS223343 - PAL-2022-004-->
+				<Button text="{i18n>downloadMaterialList}" press="onDownloadMaterialList" icon="sap-icon://download"
+					enabled="{= ${editMRF>Werks} !== '' &amp;&amp; ${editMRF>Atwrt} !== '' }"/>
+				<!--End of insert - MS223343 - PAL-2022-004-->
+				<Switch customTextOn=" " customTextOff=" " enabled="{viewConfig>/editable}" change="onPressMultipleDelAdd" state="{IsMultiple}"/>
+				<Text text="{i18n>multipleAdd}" visible="{= !${device>/system/phone}}"/>
+				<Button icon="sap-icon://add" text="{=${i18n>addMaterial}}" press="onOpenDialog" enabled="{viewConfig>/editable}">
+					<customData>
+						<core:CustomData key="fragment_name" value="ListOfMaterial"/>
+						<core:CustomData key="variable_name" value="_oLstOfMaterial"/>
+						<core:CustomData key="searchfield_maxlength" value="10"/>
+					</customData>
+				</Button>
+				<u:FileUploader enabled="{viewConfig>/editable}" id="idFileUploadMaterial" name="myFileUpload" uploadComplete="handleUploadComplete"
+					typeMissmatch="onTypeMissMatchExcel" fileType="xlsx" placeholder="{i18n>chooseFileUpload}" icon="sap-icon://upload" buttonOnly="true"
+					multiple="false" iconOnly="false" change="onUploadMaterial" buttonText="{i18n>uploadMaterial}" sameFilenameAllowed="true"
+					fileSizeExceed="onFileSizeExceed" maximumFileSize="2"></u:FileUploader>
+				<Button text="{i18n>downloadTemplate}" press="onDownloadTemplate" icon="sap-icon://download"/>
+			</OverflowToolbar>
+		</table:extension>
+		<table:columns>
+			<table:Column width="7em">
+				<Label text="{i18n>materialNo}"/>
+				<table:template>
+					<ObjectIdentifier text="{editMRF>Matnr}"/>
+				</table:template>
+			</table:Column>
+			<table:Column width="15rem" visible="{IsMultiple}">
+				<Label text="{i18n>materialDesc}"/>
+				<table:template>
+					<ObjectIdentifier text="{editMRF>Matnrdesc}"/>
+				</table:template>
+			</table:Column>
+			<table:Column visible="{=${IsMultiple} ? false : true }">
+				<Label text="{i18n>materialDesc}"/>
+				<table:template>
+					<ObjectIdentifier text="{editMRF>Matnrdesc}"/>
+				</table:template>
+			</table:Column>
+			<!--Start of insert - MS223343 - PAL-2022-004-->
+			<table:Column width="15rem">
+				<Label text="{i18n>remarks}"/>
+				<table:template>
+					<ObjectIdentifier text="{editMRF>Remarks}"/>
+				</table:template>
+			</table:Column>
+			<!--End of insert - MS223343 - PAL-2022-004-->
+			<table:Column width="9rem" visible="{=${editMRF>/Reservation} !== '' || ${editMRF>/PoNumber} !== '' ? true : false}">
+				<Label text="{i18n>docLineNo}"/>
+				<table:template>
+					<ObjectIdentifier text="{editMRF>Doclineno}" visible="{=${editMRF>/Reservation} !== '' || ${editMRF>/PoNumber} !== '' ? true : false}"/>
+				</table:template>
+			</table:Column>
+			<table:Column width="9rem" visible="{=${editMRF>/Reservation} !== '' || ${editMRF>/PoNumber} !== '' ? true : false}">
+				<Label text="{i18n>docoument}"/>
+				<table:template>
+					<ObjectIdentifier text="{editMRF>Document}" visible="{=${editMRF>/Reservation} !== '' || ${editMRF>/PoNumber} !== '' ? true : false}"/>
+				</table:template>
+			</table:Column>
+			<table:Column width="9rem" visible="{=${editMRF>/StatusId} === '10' || ${editMRF>/StatusId} === '12'}">
+				<Label text="{i18n>materialDoc}"/>
+				<table:template>
+					<ObjectIdentifier text="{editMRF>Matnrdoc}" visible="{=${editMRF>/StatusId} === '10' || ${editMRF>/StatusId} === '12'}"/>
+				</table:template>
+			</table:Column>
+			<table:Column width="7rem">
+				<Label text="{i18n>qty}"/>
+				<table:template>
+					<StepInput value="{path: 'editMRF>Quantity', type:'sap.ui.model.type.Float', constraints: { minimum: 1, maximum: 9999999}}"
+						change="fnTotalMatrQty" min="1" max="9999999" enabled="{viewConfig>/editable}"/>
+				</table:template>
+			</table:Column>
+			<table:Column width="9rem">
+				<Label text="{i18n>amount}"/>
+				<table:template>
+					<Text
+						text="{parts:[{path: 'editMRF>Map'}, {path: 'i18n>pesoCurreny'}], type:'sap.ui.model.type.Currency', formatOptions: { showMeasure: false }}"/>
+				</table:template>
+			</table:Column>
+			<table:Column width="15rem" visible="{IsMultiple}">
+				<Label text="{i18n>deliveryAdd}" required="true"/>
+				<table:template>
+					<Input enabled="{viewConfig>/editable}" placeholder="{i18n>enterAddress}" value="{path: 'editMRF>Delivaddress'}" visible="{IsMultiple}"
+						change="onChangeFieldValue" maxLength="{path:'/#MRFItem/Delivaddress/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+				</table:template>
+			</table:Column>
+			<table:Column width="9rem" visible="{IsMultiple}">
+				<Label text="{i18n>contactPerson}" required="true"/>
+				<table:template>
+					<Input enabled="{viewConfig>/editable}" placeholder="{i18n>enterContactPerson}" value="{path: 'editMRF>Contactperson'}"
+						visible="{IsMultiple}" change="onChangeFieldValue"
+						maxLength="{path:'/#MRFItem/Contactperson/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+				</table:template>
+			</table:Column>
+			<!-- Start of insert by MS223343 - PAL-2024-005 : New field 'Employee ID' -->
+			<table:Column width="19rem" visible="{IsMultiple}">
+				<Label text="{i18n>employeeID}"/>
+				<table:template>
+					<Input enabled="{viewConfig>/editable}" placeholder="{i18n>enterEmployeeId}" value="{path: 'editMRF>EmployeeIdNum'}" visible="{IsMultiple}"
+						change="onChangeFieldValue" maxLength="{path:'/#MRFItem/EmployeeIdNum/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+				</table:template>
+			</table:Column>
+			<!-- End of insert by MS223343 - PAL-2024-005 : New field 'Employee ID' -->
+			<table:Column width="9rem" visible="{IsMultiple}">
+				<Label text="{i18n>contactNumber}" required="true"/>
+				<table:template>
+					<Input enabled="{viewConfig>/editable}" placeholder="{i18n>enterContactNum}" value="{path: 'editMRF>Contactnumber'}" visible="{IsMultiple}"
+						change="onChangeFieldValue" maxLength="{path:'/#MRFItem/Contactnumber/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+				</table:template>
+			</table:Column>
+			<table:Column width="9rem" visible="{IsMultiple}">
+				<Label text="{i18n>provinceDesc}" required="true"/>
+				<table:template>
+					<Input enabled="{viewConfig>/editable}" placeholder="{i18n>selectProvince}" value="{path: 'editMRF>ProvinceDesc'}" showValueHelp="true"
+						valueHelpOnly="false" valueHelpRequest="onOpenDialogFilter" visible="{IsMultiple}" change="onChangeFieldValue">
+						<customData>
+							<core:CustomData key="fragment_name" value="ListOfProvince"/>
+							<core:CustomData key="variable_name" value="_oListOfProvince"/>
+							<core:CustomData key="searchfield_maxlength" value="15"/>
+						</customData>
+					</Input>
+				</table:template>
+			</table:Column>
+			<table:Column width="9rem" visible="{IsMultiple}">
+				<Label text="{i18n>cityDesc}" required="true"/>
+				<table:template>
+					<Input enabled="{viewConfig>/editable}" placeholder="{i18n>selectCity}" value="{path: 'editMRF>CityDesc'}" showValueHelp="true"
+						valueHelpOnly="false" valueHelpRequest="onOpenDialogFilter" visible="{IsMultiple}" change="onChangeFieldValue">
+						<customData>
+							<core:CustomData key="fragment_name" value="ListOfCity"/>
+							<core:CustomData key="variable_name" value="_oListOfCity"/>
+							<core:CustomData key="searchfield_maxlength" value="15"/>
+						</customData>
+					</Input>
+				</table:template>
+			</table:Column>
+			<table:Column width="9rem" visible="{IsMultiple}">
+				<Label text="{i18n>barangayDesc}" required="true"/>
+				<table:template>
+					<Input enabled="{viewConfig>/editable}" placeholder="{i18n>selectBarangay}" value="{path: 'editMRF>BarangayText'}" showValueHelp="true"
+						valueHelpOnly="false" valueHelpRequest="onOpenDialogFilter" visible="{IsMultiple}" change="onChangeFieldValue">
+						<customData>
+							<core:CustomData key="fragment_name" value="ListOfBarangay"/>
+							<core:CustomData key="variable_name" value="_oListOfBarangay"/>
+							<core:CustomData key="searchfield_maxlength" value="15"/>
+						</customData>
+					</Input>
+				</table:template>
+			</table:Column>
+		</table:columns>
+		<table:footer>
+			<FlexBox alignContent="End" justifyContent="End">
+				<Text text="{i18n>total}" class="sapUiSmallMarginEnd"/>
+				<Text text="{parts:[{path: 'viewConfig>/totalQtyAmount'}, {path: 'i18n>pesoCurreny'}], type: 'sap.ui.model.type.Currency'}"/>
+			</FlexBox>
+		</table:footer>
+	</table:Table>
+	<!--<Table id="idSelectedMaterialTable" mode="{=${viewConfig>/editable} ? 'Delete' : 'None'}" inset="false" delete="onDeleteMatr"-->
+	<!--	items="{ path: 'editMRF>/NavTo_MRFHeader_Items', sorter: { path: 'text' } }" class="sapUiSmallMarginBottom sapUiSmallMarginTop"-->
+	<!--	fixedLayout="false">-->
+	<!--	<headerToolbar>-->
+	<!--		<OverflowToolbar>-->
+	<!--<Title text="{i18n>material}" level="H5" titleStyle="H5" visible="{= !${device>/system/phone}}"/>-->
+	<!--<ToolbarSpacer/>-->
+	<!--<Switch customTextOn=" " customTextOff=" " enabled="{viewConfig>/editable}" change="onPressMultipleDelAdd" state="{IsMultiple}"/>-->
+	<!--<Text text="{i18n>multipleAdd}" visible="{= !${device>/system/phone}}"/>-->
+	<!--<Button icon="sap-icon://add" text="{=${i18n>addMaterial}}" press="onOpenDialog" enabled="{viewConfig>/editable}">-->
+	<!--	<customData>-->
+	<!--		<core:CustomData key="fragment_name" value="ListOfMaterial"/>-->
+	<!--		<core:CustomData key="variable_name" value="_oLstOfMaterial"/>-->
+	<!--		<core:CustomData key="searchfield_maxlength" value="10"/>-->
+	<!--	</customData>-->
+	<!--</Button>-->
+	<!--<u:FileUploader enabled="{viewConfig>/editable}" id="idFileUploadMaterial" name="myFileUpload" uploadComplete="handleUploadComplete"-->
+	<!--	typeMissmatch="onTypeMissMatchExcel" fileType="xlsx" placeholder="{i18n>chooseFileUpload}" icon="sap-icon://upload" buttonOnly="true"-->
+	<!--	multiple="false" iconOnly="false" change="onUploadMaterial" buttonText="{i18n>uploadMaterial}" sameFilenameAllowed="true"-->
+	<!--	fileSizeExceed="onFileSizeExceed" maximumFileSize="2"></u:FileUploader>-->
+	<!--<Button text="{i18n>downloadTemplate}" press="onDownloadTemplate" icon="sap-icon://download"/>-->
+	<!--		</OverflowToolbar>-->
+	<!--	</headerToolbar>-->
+	<!--	<columns>-->
+	<!--		<Column hAlign="Begin" popinDisplay="Inline">-->
+	<!--			<Text text="{i18n>materialNo}"/>-->
+	<!--		</Column>-->
+	<!--		<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">-->
+	<!--			<Text text="{i18n>materialDesc}"/>-->
+	<!--		</Column>-->
+	<!--		<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline"-->
+	<!--			visible="{=${editMRF>/Reservation} !== '' || ${editMRF>/PoNumber} !== '' ? true : false}">-->
+	<!--			<Text text="{i18n>docLineNo}"/>-->
+	<!--		</Column>-->
+	<!--		<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline"-->
+	<!--			visible="{=${editMRF>/Reservation} !== '' || ${editMRF>/PoNumber} !== '' ? true : false}">-->
+	<!--			<Text text="{i18n>docoument}"/>-->
+	<!--		</Column>-->
+	<!-- Display Mat. Doc for status = For Delivery or Completed -->
+	<!--		<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline"-->
+	<!--			visible="{=${editMRF>/StatusId} === '10' || ${editMRF>/StatusId} === '12'}">-->
+	<!--			<Text text="{i18n>materialDoc}"/>-->
+	<!--		</Column>-->
+	<!--		<Column hAlign="End" width="10em" minScreenWidth="Tablet" demandPopin="true">-->
+	<!--			<header>-->
+	<!--				<Text text="{i18n>qty}"/>-->
+	<!--			</header>-->
+	<!--			<footer>-->
+	<!--				<Text text="{i18n>total}" visible="{=!${IsMultiple}}"/>-->
+	<!--			</footer>-->
+	<!--		</Column>-->
+	<!--		<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" visible="{IsMultiple}">-->
+	<!--			<Text text="{i18n>deliveryAdd}"/>-->
+	<!--		</Column>-->
+	<!--		<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" visible="{IsMultiple}">-->
+	<!--			<Text text="{i18n>contactPerson}"/>-->
+	<!--		</Column>-->
+	<!--		<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" visible="{IsMultiple}">-->
+	<!--			<header>-->
+	<!--				<Text text="{i18n>contactNumber}"/>-->
+	<!--			</header>-->
+	<!--			<footer>-->
+	<!--				<Text text="{i18n>total}"/>-->
+	<!--			</footer>-->
+	<!--		</Column>-->
+	<!--		<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">-->
+	<!--			<header>-->
+	<!--				<Text text="{i18n>amount}"/>-->
+	<!--			</header>-->
+	<!--			<footer>-->
+	<!--				<Text text="{parts:[{path: 'viewConfig>/totalQtyAmount'}, {path: 'i18n>pesoCurreny'}], type: 'sap.ui.model.type.Currency'}"/>-->
+	<!--			</footer>-->
+	<!--		</Column>-->
+	<!--	</columns>-->
+	<!--	<items>-->
+	<!--		<ColumnListItem vAlign="Middle" type="Inactive">-->
+	<!--			<cells>-->
+	<!--				<ObjectIdentifier text="{editMRF>Matnr}"/>-->
+	<!--				<ObjectIdentifier text="{editMRF>Matnrdesc}"/>-->
+	<!--				<ObjectIdentifier text="{editMRF>Doclineno}" visible="{=${editMRF>/Reservation} !== '' || ${editMRF>/PoNumber} !== '' ? true : false}"/>-->
+	<!--				<ObjectIdentifier text="{editMRF>Document}" visible="{=${editMRF>/Reservation} !== '' || ${editMRF>/PoNumber} !== '' ? true : false}"/>-->
+	<!-- Display Mat. Doc for status = For Delivery or Completed -->
+	<!--				<ObjectIdentifier text="{editMRF>Matnrdoc}" visible="{=${editMRF>/StatusId} === '10' || ${editMRF>/StatusId} === '12'}"/>-->
+	<!--				<StepInput value="{path: 'editMRF>Quantity', type:'sap.ui.model.type.Float', constraints: { minimum: 1, maximum: 9999999}}"-->
+	<!--					change="fnTotalMatrQty" min="1" max="9999999" enabled="{viewConfig>/editable}"/>-->
+	<!--				<Input value="{path: 'editMRF>Delivaddress',type: 'sap.ui.model.type.String', constraints: { minLength: 1}}"-->
+	<!--					placeholder="{i18n>enterDelieryAdd}" visible="{IsMultiple}"-->
+	<!--					maxLength="{path:'/#MRFItem/Delivaddress/@maxLength', formatter:'.formatter.fnGetMaxLength'}" change="onChangeFieldValue"-->
+	<!--					enabled="{viewConfig>/editable}"/>-->
+	<!--				<Input value="{path: 'editMRF>Contactperson', type: 'sap.ui.model.type.String', constraints: { minLength: 1}}"-->
+	<!--					placeholder="{i18n>enterContactPerson}" visible="{IsMultiple}"-->
+	<!--					maxLength="{path:'/#MRFItem/Contactperson/@maxLength', formatter:'.formatter.fnGetMaxLength'}" change="onChangeFieldValue"-->
+	<!--					enabled="{viewConfig>/editable}"/>-->
+	<!--				<Input value="{path: 'editMRF>Contactnumber', type: 'sap.ui.model.type.String', constraints: { minLength: 1}}"-->
+	<!--					placeholder="{i18n>enterContactNum}" visible="{IsMultiple}"-->
+	<!--					maxLength="{path:'/#MRFItem/Contactnumber/@maxLength', formatter:'.formatter.fnGetMaxLength'}" change="onChangeFieldValue"-->
+	<!--					enabled="{viewConfig>/editable}"/>-->
+	<!--				<Text-->
+	<!--					text="{parts:[{path: 'editMRF>Map'}, {path: 'i18n>pesoCurreny'}], type:'sap.ui.model.type.Currency', formatOptions: { showMeasure: false }}"/>-->
+	<!--			</cells>-->
+	<!--		</ColumnListItem>-->
+	<!--	</items>-->
+	<!--</Table>-->
+</core:FragmentDefinition>

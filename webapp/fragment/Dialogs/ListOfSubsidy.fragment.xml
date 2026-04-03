@@ -1,0 +1,15 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<SelectDialog noDataText="{i18n>noSubsidy}" title="{i18n>listOfSubsidy}" search="onSearchF4Value" confirm="onAddChargeDetails"
+		items="{ path: 'F4DropdownMRF>/SubsidyCodeSet' }">
+		<items>
+			<StandardListItem title="{F4DropdownMRF>Kunnr}" description="{F4DropdownMRF>Name1}" type="Active"/>
+		</items>
+		<customData>
+			<core:CustomData key="search_field" value="Kunnr"/>
+			<core:CustomData key="search_field_desc" value="Name1"/>
+			<core:CustomData key="search_field_filter" value="Plant"/>
+			<core:CustomData key="control_field" value="Subsidy"/>
+			<core:CustomData key="control_field_desc" value="SubsidyDesc"/>
+		</customData>
+	</SelectDialog>
+</core:FragmentDefinition>

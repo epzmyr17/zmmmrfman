@@ -1,0 +1,51 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+	<Table id="idApproverTable" inset="false" delete="onDeletetApproval" items="{ path: 'createMRF>/NavTo_MRFHeader_Approver'}"
+		class="sapUiSmallMarginBottom">
+		<headerToolbar>
+			<OverflowToolbar>
+				<Title text="{i18n>selectedApprover}" level="H3"/>
+				<ToolbarSpacer/>
+				<Button text="{i18n>addNextApv}" press="onAddApprovers" icon="sap-icon://add"/>
+				<Button text="{i18n>addFBAApv}" press="onAddFBAApprover" icon="sap-icon://add-contact"/>
+				<Button text="{i18n>additionalApv}" press="onAdditionalApprover" icon="sap-icon://add-coursebook"/>
+			</OverflowToolbar>
+		</headerToolbar>
+		<columns>
+			<Column hAlign="Begin" width="1em" popinDisplay="Inline">
+				<Text text="{i18n>sequence}"/>
+			</Column>
+			<Column hAlign="Begin" width="3em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+				<Text text="{i18n>type}"/>
+			</Column>
+			<Column hAlign="Begin" width="5em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+				<Text text="{i18n>emailAddress}"/>
+			</Column>
+			<Column hAlign="Begin" width="4em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+				<Text text="{i18n>approverName}"/>
+			</Column>
+			<Column hAlign="Begin" width="2em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+				<Text text="{i18n>userId}"/>
+			</Column>
+			<Column hAlign="End" width="2em" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">
+				<Text text="{i18n>action}"/>
+			</Column>
+		</columns>
+		<items>
+			<ColumnListItem vAlign="Middle" type="Inactive">
+				<cells>
+					<ObjectIdentifier text="{createMRF>Zlevel}"/>
+					<ObjectIdentifier text="{ path: 'createMRF>Apvtype', formatter: '.formatter.formatApproverType'}"/>
+					<Input value="{createMRF>Email}" placeholder="{i18n>selectEmailAddress}" showValueHelp="true" valueHelpOnly="true"
+						valueHelpRequest="onOpenApproverList" editable="{= ${createMRF>Apvtype} !== 'ALLOCATOR' &amp;&amp; ${createMRF>Apvtype} !== 'PROCESSOR'}">
+						<customData>
+							<core:CustomData key="searchfield_maxlength" value="10"/>
+						</customData>
+					</Input>
+					<ObjectIdentifier text="{createMRF>Name}"/>
+					<ObjectIdentifier text="{createMRF>Sapid}"/>
+					<Button icon="sap-icon://sys-cancel" enabled="{createMRF>Editable}" press="onDeletetApproval"/>
+				</cells>
+			</ColumnListItem>
+		</items>
+	</Table>
+</core:FragmentDefinition>

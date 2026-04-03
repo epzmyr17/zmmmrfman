@@ -1,0 +1,271 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:table="sap.ui.table" xmlns:core="sap.ui.core" xmlns:f="sap.ui.layout.form"
+	xmlns:u="sap.ui.unified" xmlns:app="http://schemas.sap.com/sapui5/extension/sap.ui.core.CustomData/1">
+	<VBox class="sapUiMediumMarginBottom">
+		<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="12" labelSpanS="12"
+			adjustLabelSpan="false" emptySpanXL="4" emptySpanL="4" emptySpanM="4" emptySpanS="0" columnsXL="1" columnsL="1" columnsM="1"
+			singleContainerFullSize="false">
+			<f:content>
+				<Toolbar class="mrf-title-border-bottom">
+					<Title text="{i18n>commidityAndPlant}" level="H5" titleStyle="H5"/>
+				</Toolbar>
+				<Label text="{i18n>commodity}" required="true"/>
+				<Select forceSelection="false" items="{F4DropdownMRF>/ZMMM_I_HELP_ATWRT}" selectedKey="{createMRF>Atwrt}" change="onSelectCommodity">
+					<core:Item text="{F4DropdownMRF>Commodity}" key="{F4DropdownMRF>Commodity}"/>
+				</Select>
+				<Label text="{i18n>businessEntity}" required="true"/>
+				<Input value="{createMRF>PlantDesc}" id="idInputPlant" placeholder="{i18n>selectEntity}" change="onChangeFieldValue" valueHelpOnly="true"
+					showValueHelp="true" valueHelpRequest="onOpenDialog">
+					<customData>
+						<core:CustomData key="fragment_name" value="ListOfPlant"/>
+						<core:CustomData key="variable_name" value="_oListOfPlants"/>
+						<core:CustomData key="searchfield_maxlength" value="10"/>
+					</customData>
+				</Input>
+			</f:content>
+		</f:SimpleForm>
+		<table:Table id="idSelectedMaterialTable" rows="{ path: 'createMRF>/NavTo_MRFHeader_Items' }" visibleRowCount="7"
+			enableColumnReordering="false" selectionMode="MultiToggle" rowSelectionChange="onSelectTableItem">
+			<table:extension>
+				<OverflowToolbar>
+					<!--Title text="Bleh" level="H5" titleStyle="H5" visible="{= !${device>/system/phone}}"/-->
+					<Button icon="sap-icon://delete" text="Delete" press="onDelete"></Button>
+					<ToolbarSpacer/>
+					<!--Start of insert - MS223343 - PAL-2022-004-->
+					<Button text="{i18n>downloadMaterialList}" press="onDownloadMaterialList" icon="sap-icon://download"
+						enabled="{= ${createMRF>Werks} !== '' &amp;&amp; ${createMRF>Atwrt} !== '' }"/>
+					<!--End of insert - MS223343 - PAL-2022-004-->
+					<Switch customTextOn=" " customTextOff=" " enabled="{=${createMRF>Werks} !== ''}" change="onPressMultipleDelAdd"
+						state="{createMRF>/IsMultiple}"></Switch>
+					<Text text="{i18n>multipleAdd}" visible="{= !${device>/system/phone}}"/>
+					<Button type="Transparent" icon="sap-icon://add" text="{i18n>addMaterial}" press="onOpenDialog" enabled="{=${createMRF>Werks} !== ''}">
+						<customData>
+							<core:CustomData key="fragment_name" value="ListOfMaterial"/>
+							<core:CustomData key="variable_name" value="_oLstOfMaterial"/>
+							<core:CustomData key="searchfield_maxlength" value="10"/>
+						</customData>
+					</Button>
+					<u:FileUploader enabled="{=${createMRF>Werks} !== ''}" id="idFileUploadMaterial" name="myFileUpload" uploadComplete="handleUploadComplete"
+						typeMissmatch="onTypeMissMatchExcel" fileType="xlsx" placeholder="{i18n>chooseFileUpload}" icon="sap-icon://upload" buttonOnly="true"
+						multiple="false" iconOnly="false" change="onUploadMaterial" buttonText="{i18n>uploadMaterial}" sameFilenameAllowed="true"
+						fileSizeExceed="onFileSizeExceed" maximumFileSize="2"></u:FileUploader>
+					<Button text="{i18n>downloadTemplate}" press="onDownloadTemplate" icon="sap-icon://download"/>
+				</OverflowToolbar>
+			</table:extension>
+			<table:columns>
+				<table:Column width="7em">
+					<Label text="{i18n>materialNo}"/>
+					<table:template>
+						<ObjectIdentifier text="{createMRF>Matnr}"/>
+					</table:template>
+				</table:Column>
+				<table:Column width="15rem" visible="{createMRF>/IsMultiple}">
+					<Label text="{i18n>materialDesc}"/>
+					<table:template>
+						<ObjectIdentifier text="{createMRF>Matnrdesc}"/>
+					</table:template>
+				</table:Column>
+				<table:Column visible="{=${createMRF>/IsMultiple} ? false : true }">
+					<Label text="{i18n>materialDesc}"/>
+					<table:template>
+						<ObjectIdentifier text="{createMRF>Matnrdesc}"/>
+					</table:template>
+				</table:Column>
+				<table:Column width="7rem">
+					<Label text="{i18n>qty}"/>
+					<table:template>
+						<StepInput value="{path: 'createMRF>Quantity', type:'sap.ui.model.type.Float', constraints: { minimum: 1, maximum: 9999999}}"
+							change="fnTotalMatrQty" min="1" max="9999999"/>
+					</table:template>
+				</table:Column>
+				<table:Column width="9rem">
+					<Label text="{i18n>amount}"/>
+					<table:template>
+						<Text
+							text="{parts:[{path: 'createMRF>Map'}, {path: 'i18n>pesoCurreny'}], type:'sap.ui.model.type.Currency', formatOptions: { showMeasure: false }}"/>
+					</table:template>
+				</table:Column>
+				<table:Column width="15rem" visible="{createMRF>/IsMultiple}">
+					<Label text="{i18n>deliveryAdd}" required="true"/>
+					<table:template>
+						<Input placeholder="{i18n>enterAddress}" value="{path: 'createMRF>Delivaddress'}" visible="{createMRF>/IsMultiple}"
+							change="onChangeFieldValue" maxLength="{path:'/#MRFItem/Delivaddress/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+					</table:template>
+				</table:Column>
+				<table:Column width="9rem" visible="{createMRF>/IsMultiple}">
+					<Label text="{i18n>contactPerson}" required="true"/>
+					<table:template>
+						<Input placeholder="{i18n>enterContactPerson}" value="{path: 'createMRF>Contactperson'}" visible="{createMRF>/IsMultiple}"
+							change="onChangeFieldValue" maxLength="{path:'/#MRFItem/Contactperson/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+					</table:template>
+				</table:Column>
+				<!-- Start of insert by MS223343 - PAL-2024-005 : New field 'Employee ID' -->
+				<table:Column width="19rem" visible="{createMRF>/IsMultiple}">
+					<Label text="{i18n>employeeID}"/>
+					<table:template>
+						<Input placeholder="{i18n>enterEmployeeId}" value="{path: 'createMRF>EmployeeIdNum'}" visible="{createMRF>/IsMultiple}"
+							change="onChangeFieldValue" maxLength="{path:'/#MRFItem/EmployeeIdNum/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+					</table:template>
+				</table:Column>
+				<!-- End of insert by MS223343 - PAL-2024-005 : New field 'Employee ID' -->
+				<table:Column width="9rem" visible="{createMRF>/IsMultiple}">
+					<Label text="{i18n>contactNumber}" required="true"/>
+					<table:template>
+						<Input placeholder="{i18n>enterContactNum}" value="{path: 'createMRF>Contactnumber'}" visible="{createMRF>/IsMultiple}"
+							change="onChangeFieldValue" maxLength="{path:'/#MRFItem/Contactnumber/@maxLength', formatter:'.formatter.fnGetMaxLength'}"/>
+					</table:template>
+				</table:Column>
+				<table:Column width="9rem" visible="{createMRF>/IsMultiple}">
+					<Label text="{i18n>provinceDesc}" required="true"/>
+					<table:template>
+						<Input placeholder="{i18n>selectProvince}" value="{path: 'createMRF>ProvinceDesc'}" showValueHelp="true" valueHelpOnly="false"
+							valueHelpRequest="onOpenDialogFilter" visible="{createMRF>/IsMultiple}" change="onChangeFieldValue">
+							<customData>
+								<core:CustomData key="fragment_name" value="ListOfProvince"/>
+								<core:CustomData key="variable_name" value="_oListOfProvince"/>
+								<core:CustomData key="searchfield_maxlength" value="15"/>
+							</customData>
+						</Input>
+					</table:template>
+				</table:Column>
+				<table:Column width="9rem" visible="{createMRF>/IsMultiple}">
+					<Label text="{i18n>cityDesc}" required="true"/>
+					<table:template>
+						<Input placeholder="{i18n>selectCity}" value="{path: 'createMRF>CityDesc'}" showValueHelp="true" valueHelpOnly="false"
+							valueHelpRequest="onOpenDialogFilter" visible="{createMRF>/IsMultiple}" change="onChangeFieldValue">
+							<customData>
+								<core:CustomData key="fragment_name" value="ListOfCity"/>
+								<core:CustomData key="variable_name" value="_oListOfCity"/>
+								<core:CustomData key="searchfield_maxlength" value="15"/>
+							</customData>
+						</Input>
+					</table:template>
+				</table:Column>
+				<table:Column width="9rem" visible="{createMRF>/IsMultiple}">
+					<Label text="{i18n>barangayDesc}" required="true"/>
+					<table:template>
+						<Input placeholder="{i18n>selectBarangay}" value="{path: 'createMRF>BarangayText'}" showValueHelp="true" valueHelpOnly="false"
+							valueHelpRequest="onOpenDialogFilter" visible="{createMRF>/IsMultiple}" change="onChangeFieldValue">
+							<customData>
+								<core:CustomData key="fragment_name" value="ListOfBarangay"/>
+								<core:CustomData key="variable_name" value="_oListOfBarangay"/>
+								<core:CustomData key="searchfield_maxlength" value="15"/>
+							</customData>
+						</Input>
+					</table:template>
+				</table:Column>
+			</table:columns>
+			<table:footer>
+				<FlexBox alignContent="End" justifyContent="End">
+					<Text text="{i18n>total}" class="sapUiSmallMarginEnd"/>
+					<Text text="{parts:[{path: 'viewConfig>/totalQtyAmount'}, {path: 'i18n>pesoCurreny'}], type: 'sap.ui.model.type.Currency'}"/>
+				</FlexBox>
+			</table:footer>
+		</table:Table>
+	</VBox>
+	<!--<VBox class="sapUiMediumMarginBottom">-->
+	<!--	<f:SimpleForm editable="true" layout="ResponsiveGridLayout" labelSpanXL="4" labelSpanL="4" labelSpanM="12" labelSpanS="12"-->
+	<!--		adjustLabelSpan="false" emptySpanXL="4" emptySpanL="4" emptySpanM="4" emptySpanS="0" columnsXL="1" columnsL="1" columnsM="1"-->
+	<!--		singleContainerFullSize="false">-->
+	<!--		<f:content>-->
+	<!--			<Toolbar class="mrf-title-border-bottom">-->
+	<!--				<Title text="{i18n>commidityAndPlant}" level="H5" titleStyle="H5"/>-->
+	<!--			</Toolbar>-->
+	<!--			<Label text="{i18n>commodity}" required="true"/>-->
+	<!--			<Select forceSelection="false" items="{F4DropdownMRF>/ZMMM_I_HELP_ATWRT}" selectedKey="{createMRF>Atwrt}" change="onSelectCommodity">-->
+	<!--				<core:Item text="{F4DropdownMRF>Commodity}" key="{F4DropdownMRF>Commodity}"/>-->
+	<!--			</Select>-->
+	<!--			<Label text="{i18n>businessEntity}" required="true"/>-->
+	<!--			<Input value="{createMRF>PlantDesc}" id="idInputPlant" placeholder="{i18n>selectEntity}" change="onChangeFieldValue" valueHelpOnly="true"-->
+	<!--				showValueHelp="true" valueHelpRequest="onOpenDialog">-->
+	<!--				<customData>-->
+	<!--					<core:CustomData key="fragment_name" value="ListOfPlant"/>-->
+	<!--					<core:CustomData key="variable_name" value="_oListOfPlants"/>-->
+	<!--					<core:CustomData key="searchfield_maxlength" value="10"/>-->
+	<!--				</customData>-->
+	<!--			</Input>-->
+	<!--		</f:content>-->
+	<!--	</f:SimpleForm>-->
+	<!-- Table for material selection -->
+	<!--	<Table id="idSelectedMaterialTable" mode="Delete" inset="false" delete="onDeletetMaterial"-->
+	<!--		items="{ path: 'createMRF>/NavTo_MRFHeader_Items'}" class="sapUiSmallMarginBottom sapUiSmallMarginTop" fixedLayout="false">-->
+	<!--		<headerToolbar>-->
+	<!--			<OverflowToolbar>-->
+	<!--				<Title text="{i18n>material}" level="H5" titleStyle="H5" visible="{= !${device>/system/phone}}"/>-->
+	<!--				<ToolbarSpacer/>-->
+	<!--				<Switch customTextOn=" " customTextOff=" " enabled="{=${createMRF>Werks} !== ''}" change="onPressMultipleDelAdd"-->
+	<!--					state="{createMRF>/IsMultiple}"></Switch>-->
+	<!--				<Text text="{i18n>multipleAdd}" visible="{= !${device>/system/phone}}"/>-->
+	<!--				<Button type="Transparent" icon="sap-icon://add" text="{i18n>addMaterial}" press="onOpenDialog" enabled="{=${createMRF>Werks} !== ''}">-->
+	<!--					<customData>-->
+	<!--						<core:CustomData key="fragment_name" value="ListOfMaterial"/>-->
+	<!--						<core:CustomData key="variable_name" value="_oLstOfMaterial"/>-->
+	<!--						<core:CustomData key="searchfield_maxlength" value="10"/>-->
+	<!--					</customData>-->
+	<!--				</Button>-->
+	<!--				<u:FileUploader style="Transparent" enabled="{=${createMRF>Werks} !== ''}" id="idFileUploadMaterial" typeMissmatch="onTypeMissMatchExcel"-->
+	<!--					fileType="xlsx" placeholder="{i18n>chooseFileUpload}" icon="sap-icon://upload" buttonOnly="true" multiple="false" iconOnly="false"-->
+	<!--					change="onUploadMaterial" sameFilenameAllowed="true" buttonText="{i18n>uploadMaterial}"></u:FileUploader>-->
+	<!--				<Button text="{i18n>downloadTemplate}" press="onDownloadTemplate" icon="sap-icon://download"/>-->
+	<!--			</OverflowToolbar>-->
+	<!--		</headerToolbar>-->
+	<!--		<columns>-->
+	<!--			<Column hAlign="Begin" popinDisplay="Inline">-->
+	<!--				<Text text="{i18n>materialNo}"/>-->
+	<!--			</Column>-->
+	<!--			<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">-->
+	<!--				<Text text="{i18n>materialDesc}"/>-->
+	<!--			</Column>-->
+	<!--			<Column hAlign="End" width="10em" minScreenWidth="Tablet" demandPopin="true">-->
+	<!--				<header>-->
+	<!--					<Text text="{i18n>qty}"/>-->
+	<!--				</header>-->
+	<!--				<footer>-->
+	<!--					<Text text="{i18n>total}" visible="{=!${createMRF>/IsMultiple}}"/>-->
+	<!--				</footer>-->
+	<!--			</Column>-->
+	<!--			<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" visible="{createMRF>/IsMultiple}">-->
+	<!--				<Text text="{i18n>deliveryAdd}"/>-->
+	<!--			</Column>-->
+	<!--			<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" visible="{createMRF>/IsMultiple}">-->
+	<!--				<Text text="{i18n>contactPerson}"/>-->
+	<!--			</Column>-->
+	<!--			<Column hAlign="Begin" minScreenWidth="Tablet" demandPopin="true" visible="{createMRF>/IsMultiple}">-->
+	<!--				<header><Text text="{i18n>contactNumber}"/>-->
+	<!--				</header>-->
+	<!--				<footer>-->
+	<!--					<Text text="{i18n>total}"/>-->
+	<!--				</footer>-->
+	<!--			</Column>-->
+	<!--			<Column hAlign="End" minScreenWidth="Tablet" demandPopin="true" popinDisplay="Inline">-->
+	<!--				<header>-->
+	<!--					<Text text="{i18n>amount}"/>-->
+	<!--				</header>-->
+	<!--				<footer>-->
+	<!--					<Text text="{parts:[{path: 'viewConfig>/totalQtyAmount'}, {path: 'i18n>pesoCurreny'}], type: 'sap.ui.model.type.Currency'}"/>-->
+	<!--				</footer>-->
+	<!--			</Column>-->
+	<!--		</columns>-->
+	<!--		<items>-->
+	<!--			<ColumnListItem vAlign="Middle" type="Inactive">-->
+	<!--				<cells>-->
+	<!--					<ObjectIdentifier text="{createMRF>Matnr}"/>-->
+	<!--					<ObjectIdentifier text="{createMRF>Matnrdesc}"/>-->
+	<!--					<StepInput value="{path: 'createMRF>Quantity', type:'sap.ui.model.type.Float', constraints: { minimum: 1, maximum: 9999999}}" width="100%"-->
+	<!--						change="fnTotalMatrQty" min="1" max="9999999"/>-->
+	<!--					<Input value="{path: 'createMRF>Delivaddress',type: 'sap.ui.model.type.String', constraints: { minLength: 1}}"-->
+	<!--						placeholder="{i18n>enterDelieryAdd}" visible="{createMRF>/IsMultiple}"-->
+	<!--						maxLength="{path:'/#MRFItem/Delivaddress/@maxLength', formatter:'.formatter.fnGetMaxLength'}" change="onChangeFieldValue"/>-->
+	<!--					<Input value="{path: 'createMRF>Contactperson', type: 'sap.ui.model.type.String', constraints: { minLength: 1}}"-->
+	<!--						placeholder="{i18n>enterContactPerson}" visible="{createMRF>/IsMultiple}"-->
+	<!--						maxLength="{path:'/#MRFItem/Contactperson/@maxLength', formatter:'.formatter.fnGetMaxLength'}" change="onChangeFieldValue"/>-->
+	<!--					<Input value="{path: 'createMRF>Contactnumber', type: 'sap.ui.model.type.String', constraints: { minLength: 1}}"-->
+	<!--						placeholder="{i18n>enterContactNum}" visible="{createMRF>/IsMultiple}"-->
+	<!--						maxLength="{path:'/#MRFItem/Contactnumber/@maxLength', formatter:'.formatter.fnGetMaxLength'}" change="onChangeFieldValue"/>-->
+	<!--					<Text-->
+	<!--						text="{parts:[{path: 'createMRF>Map'}, {path: 'i18n>pesoCurreny'}], type:'sap.ui.model.type.Currency', formatOptions: { showMeasure: false }}"/>-->
+	<!--				</cells>-->
+	<!--			</ColumnListItem>-->
+	<!--		</items>-->
+	<!--	</Table>-->
+	<!--</VBox>-->
+</core:FragmentDefinition>

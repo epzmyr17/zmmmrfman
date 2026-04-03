@@ -1,0 +1,18 @@
+[{
+	"Recnum": "MRF-89001-CD01",
+	"Linenum": "001",
+	"AttachType": "",
+	"FileName": "Monthly Sales",
+	"MimeType": "application/pdf",
+	"FileSize": "9.52 MB",
+	"Icon": "sap-icon://pdf-attachment"
+},
+{
+	"Recnum": "MRF-98001-CD02",
+	"Linenum": "001",
+	"AttachType": "",
+	"FileName": "Salary Report",
+	"MimeType": "application/pdf",
+	"FileSize": "1.42 MB",
+	"Icon": "sap-icon://pdf-attachment"
+}]

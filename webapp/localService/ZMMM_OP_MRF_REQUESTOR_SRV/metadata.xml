@@ -1,0 +1,155 @@
+<edmx:Edmx xmlns:edmx="http://schemas.microsoft.com/ado/2007/06/edmx"
+	xmlns:m="http://schemas.microsoft.com/ado/2007/08/dataservices/metadata" xmlns:sap="http://www.sap.com/Protocols/SAPData" Version="1.0">
+	<edmx:DataServices m:DataServiceVersion="2.0">
+		<Schema xmlns="http://schemas.microsoft.com/ado/2008/09/edm" Namespace="ZMMM_OP_MRF_REQUESTOR_SRV" xml:lang="en" sap:schema-version="1">
+			<EntityType Name="Attachment" m:HasStream="true" sap:content-version="1">
+				<Key><PropertyRef Name="Recnum"/><PropertyRef Name="Linenum"/></Key><Property Name="Recnum" Type="Edm.String" Nullable="false" MaxLength="16" sap:unicode="false" sap:label="MRF Number" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Linenum" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="MRF Line Number"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="AttachType" Type="Edm.String" Nullable="false" MaxLength="2" sap:unicode="false" sap:label="Attachment Type"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="FileName" Type="Edm.String" Nullable="false" MaxLength="255" sap:unicode="false" sap:label="File Name" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="MimeType" Type="Edm.String" Nullable="false" MaxLength="64" sap:unicode="false" sap:label="MIME type" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="FileSize" Type="Edm.String" Nullable="false" MaxLength="35" sap:unicode="false" sap:label="Filesize" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Icon" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Icon" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/></EntityType>
+			<EntityType Name="MRFHeader" sap:content-version="1">
+				<Key><PropertyRef Name="Recnum"/></Key><Property Name="Recnum" Type="Edm.String" Nullable="false" MaxLength="16" sap:unicode="false" sap:label="MRF Number" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Purpose" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Purpose of Request"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Justification" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Justification"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Delivmode" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Mode of Delivery"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Delivaddress" Type="Edm.String" Nullable="false" MaxLength="60" sap:unicode="false" sap:label="Delivery Address"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Contactperson" Type="Edm.String" Nullable="false" MaxLength="35" sap:unicode="false" sap:label="Name" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Contactnumber" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Telephone"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Chargeto" Type="Edm.String" Nullable="false" MaxLength="5" sap:unicode="false" sap:label="Type of Charge"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Wbs" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Description" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Opex" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Opex Type" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Kostl" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:label="Cost Center" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Aufnr" Type="Edm.String" Nullable="false" MaxLength="12" sap:unicode="false" sap:label="Order" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Subsidy" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Subsidy Code"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Instructions" Type="Edm.String" Nullable="false" MaxLength="60" sap:unicode="false" sap:label="Special Instructions"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Status" Type="Edm.String" Nullable="false" MaxLength="20" sap:unicode="false" sap:label="Overall Status"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Currentagent" Type="Edm.String" Nullable="false" MaxLength="60" sap:unicode="false" sap:label="Current Agent"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Requestor" Type="Edm.String" Nullable="false" MaxLength="60" sap:unicode="false" sap:label="Requestor" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Reservation" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:label="Reservation"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="PoNumber" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:label="Purchasing Doc."
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="ChangedOn" Type="Edm.DateTime" Nullable="false" Precision="7" sap:unicode="false" sap:label="Changed On"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="TimeChanged" Type="Edm.Time" Nullable="false" Precision="0" sap:unicode="false" sap:label="Time Changed"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="ChangedBy" Type="Edm.String" Nullable="false" MaxLength="12" sap:unicode="false" sap:label="Changed By"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="CreatedOn" Type="Edm.DateTime" Nullable="false" Precision="7" sap:unicode="false" sap:label="Created On"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="TimeCreated" Type="Edm.Time" Nullable="false" Precision="0" sap:unicode="false" sap:label="Time Created"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="CreatedBy" Type="Edm.String" Nullable="false" MaxLength="12" sap:unicode="false" sap:label="Created By"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Amount" Type="Edm.Decimal" Nullable="false" Precision="14" Scale="3" sap:unicode="false" sap:label="Amount"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="DaysElapsed" Type="Edm.Int16" Nullable="false" sap:unicode="false" sap:label="Days Elapsed" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="MsgRecnum" Type="Edm.String" Nullable="false" MaxLength="15" sap:unicode="false" sap:label="MRF Record Number"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Werks" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="Plant" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Atwrt" Type="Edm.String" Nullable="false" MaxLength="70" sap:unicode="false" sap:label="Commodity" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="MsgV1" Type="Edm.String" Nullable="false" MaxLength="100" sap:unicode="false" sap:label="MsgV1" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="MsgV2" Type="Edm.String" Nullable="false" MaxLength="100" sap:unicode="false" sap:label="MsgV2" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="MsgType" Type="Edm.String" Nullable="false" MaxLength="1" sap:unicode="false" sap:label="Message Type" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="PlantDesc" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Plant Description"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Saknr" Type="Edm.String" Nullable="false" MaxLength="10" sap:unicode="false" sap:label="G/L Account Number"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="SaknrDesc" Type="Edm.String" Nullable="false" MaxLength="50" sap:unicode="false" sap:label="G/L Account Long Text"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="WbsDesc" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false"
+					sap:label="PS: Short description (1st text line)" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="KostlDesc" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Cost Center Desctription"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="OpexDesc" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="OPEX Description"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="SubsidyDesc" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Subsidy Description"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="PurposeDesc" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Purpose of Request Desc"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="ChargeToDesc" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Charge To Description"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="DelivModeDesc" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false"
+					sap:label="Mode of Delivery Description" sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="OrderDesc" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Order Number Description"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Email" Type="Edm.String" Nullable="false" MaxLength="241" sap:unicode="false" sap:label="Email" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="OthContPerson" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Boolean" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="OthContName" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Other Contact Name"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="OthContNumber" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Other Contact Number"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="OthEmail" Type="Edm.String" Nullable="false" MaxLength="241" sap:unicode="false" sap:label="Other Contact Email"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="IsMultiple" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Is Multiple" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Notes" Type="Edm.String" Nullable="false" MaxLength="255" sap:unicode="false" sap:label="Notes" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="StatusId" Type="Edm.String" Nullable="false" MaxLength="2" sap:unicode="false" sap:label="Status Id" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="RequestorUrl" Type="Edm.String" Nullable="false" MaxLength="255" sap:unicode="false" sap:label="Requestor URL"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="ApproverUrl" Type="Edm.String" Nullable="false" MaxLength="255" sap:unicode="false" sap:label="Approver URL"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="ReportUrl" Type="Edm.String" Nullable="false" MaxLength="255" sap:unicode="false" sap:label="Report URL"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="UserDecision" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="User Decision"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><NavigationProperty Name="NavTo_MRFHeader_Attachment" Relationship="ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader_Attachment"
+					FromRole="FromRole_MRFHeader_Attachment" ToRole="ToRole_MRFHeader_Attachment"/><NavigationProperty Name="NavTo_MRFHeader_Items" Relationship="ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader_Items"
+					FromRole="FromRole_MRFHeader_Items" ToRole="ToRole_MRFHeader_Items"/><NavigationProperty Name="NavTo_MRFHeader_Approver" Relationship="ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader_Approver"
+					FromRole="FromRole_MRFHeader_Approver" ToRole="ToRole_MRFHeader_Approver"/></EntityType>
+			<EntityType Name="MRFItem" sap:content-version="1">
+				<Key><PropertyRef Name="Recnum"/><PropertyRef Name="Linenum"/></Key><Property Name="Recnum" Type="Edm.String" Nullable="false" MaxLength="16" sap:unicode="false" sap:label="MRF Number" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Linenum" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="MRF Line Number"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Matnr" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Material" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Quantity" Type="Edm.String" Nullable="false" MaxLength="6" sap:unicode="false" sap:label="Quantity" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Werks" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="Plant" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Contactperson" Type="Edm.String" Nullable="false" MaxLength="35" sap:unicode="true" sap:label="Name" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Lgort" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="Stor. location" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Contactnumber" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Telephone"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Map" Type="Edm.Decimal" Nullable="false" Precision="14" Scale="3" sap:unicode="false" sap:label="MAP" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Document" Type="Edm.String" Nullable="false" MaxLength="14" sap:unicode="false" sap:label="Document" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Doclineno" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="Document Line Number"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Doctype" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="Document Type"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Matnrdoc" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Material Document"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Delivaddress" Type="Edm.String" Nullable="false" MaxLength="60" sap:unicode="false" sap:label="Delivery Address"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Remarks" Type="Edm.String" Nullable="false" MaxLength="255" sap:unicode="true" sap:label="Changes Remarks"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Matnrdesc" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Material Description"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/></EntityType>
+			<EntityType Name="Approvers" sap:content-version="1">
+				<Key><PropertyRef Name="Recnum"/><PropertyRef Name="Linenum"/></Key><Property Name="Recnum" Type="Edm.String" Nullable="false" MaxLength="16" sap:unicode="false" sap:label="MRF Number" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Linenum" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="Row Id" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Zlevel" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="Approver Level"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Apvtype" Type="Edm.String" Nullable="false" MaxLength="25" sap:unicode="false" sap:label="Approver Type"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Sapid" Type="Edm.String" Nullable="false" MaxLength="12" sap:unicode="false" sap:label="User" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Email" Type="Edm.String" Nullable="false" MaxLength="241" sap:unicode="false" sap:label="E-Mail Address"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Name" Type="Edm.String" Nullable="false" MaxLength="35" sap:unicode="false" sap:label="Name" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Status" Type="Edm.String" Nullable="false" MaxLength="25" sap:unicode="false" sap:label="Status" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Editable" Type="Edm.Boolean" Nullable="false" sap:unicode="false" sap:label="Editable" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/></EntityType>
+			<EntityType Name="MaterialCheck" sap:content-version="1">
+				<Key><PropertyRef Name="Matnr"/></Key><Property Name="Matnr" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Material" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Maktx" Type="Edm.String" Nullable="false" MaxLength="40" sap:unicode="false" sap:label="Description" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Mtart" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="Material type" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Matkl" Type="Edm.String" Nullable="false" MaxLength="9" sap:unicode="false" sap:label="Material Group" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Werks" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="Valuation area" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Qty" Type="Edm.String" Nullable="false" MaxLength="6" sap:unicode="false" sap:label="Quantity" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Price" Type="Edm.String" Nullable="false" MaxLength="35" sap:unicode="false" sap:label="Price" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="DelivAdd" Type="Edm.String" Nullable="false" MaxLength="60" sap:unicode="false" sap:label="Delivery Address"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="ContactPers" Type="Edm.String" Nullable="false" MaxLength="35" sap:unicode="false" sap:label="Contact Person"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="ContactNo" Type="Edm.String" Nullable="false" MaxLength="30" sap:unicode="false" sap:label="Contact Number"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="ReturnMsg" Type="Edm.String" Nullable="false" MaxLength="50" sap:unicode="false" sap:label="ReturnMessage"
+					sap:creatable="false" sap:updatable="false" sap:sortable="false" sap:filterable="false"/></EntityType>
+			<EntityType Name="Actions" sap:content-version="1">
+				<Key><PropertyRef Name="Id"/></Key><Property Name="Id" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="ID" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Desc" Type="Edm.String" Nullable="false" MaxLength="50" sap:unicode="false" sap:label="Description" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/><Property Name="Count" Type="Edm.String" Nullable="false" MaxLength="4" sap:unicode="false" sap:label="Count" sap:creatable="false"
+					sap:updatable="false" sap:sortable="false" sap:filterable="false"/></EntityType>
+			<Association Name="MRFHeader_Items" sap:content-version="1"><End Type="ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader" Multiplicity="1" Role="FromRole_MRFHeader_Items"/><End Type="ZMMM_OP_MRF_REQUESTOR_SRV.MRFItem" Multiplicity="*" Role="ToRole_MRFHeader_Items"/>
+				<ReferentialConstraint>
+					<Principal Role="FromRole_MRFHeader_Items"><PropertyRef Name="Recnum"/></Principal>
+					<Dependent Role="ToRole_MRFHeader_Items"><PropertyRef Name="Recnum"/></Dependent>
+				</ReferentialConstraint>
+			</Association>
+			<Association Name="MRFHeader_Approver" sap:content-version="1"><End Type="ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader" Multiplicity="1" Role="FromRole_MRFHeader_Approver"/><End Type="ZMMM_OP_MRF_REQUESTOR_SRV.Approvers" Multiplicity="*" Role="ToRole_MRFHeader_Approver"/>
+				<ReferentialConstraint>
+					<Principal Role="FromRole_MRFHeader_Approver"><PropertyRef Name="Recnum"/></Principal>
+					<Dependent Role="ToRole_MRFHeader_Approver"><PropertyRef Name="Recnum"/></Dependent>
+				</ReferentialConstraint>
+			</Association>
+			<Association Name="MRFHeader_Attachment" sap:content-version="1"><End Type="ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader" Multiplicity="1" Role="FromRole_MRFHeader_Attachment"/><End Type="ZMMM_OP_MRF_REQUESTOR_SRV.Attachment" Multiplicity="*" Role="ToRole_MRFHeader_Attachment"/>
+				<ReferentialConstraint>
+					<Principal Role="FromRole_MRFHeader_Attachment"><PropertyRef Name="Recnum"/></Principal>
+					<Dependent Role="ToRole_MRFHeader_Attachment"><PropertyRef Name="Recnum"/></Dependent>
+				</ReferentialConstraint>
+			</Association>
+			<EntityContainer Name="ZMMM_OP_MRF_REQUESTOR_SRV_Entities" m:IsDefaultEntityContainer="true" sap:supported-formats="atom json xlsx"><EntitySet Name="AttachmentSet" EntityType="ZMMM_OP_MRF_REQUESTOR_SRV.Attachment" sap:creatable="false" sap:updatable="false"
+				sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/><EntitySet Name="MRFHeaderSet" EntityType="ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader" sap:creatable="false" sap:updatable="false"
+				sap:deletable="false" sap:pageable="false" sap:content-version="1"/><EntitySet Name="MRFItemSet" EntityType="ZMMM_OP_MRF_REQUESTOR_SRV.MRFItem" sap:creatable="false" sap:updatable="false"
+				sap:deletable="false" sap:pageable="false" sap:content-version="1"/><EntitySet Name="ApproversSet" EntityType="ZMMM_OP_MRF_REQUESTOR_SRV.Approvers" sap:creatable="false" sap:updatable="false"
+				sap:deletable="false" sap:pageable="false" sap:content-version="1"/><EntitySet Name="MaterialCheckSet" EntityType="ZMMM_OP_MRF_REQUESTOR_SRV.MaterialCheck" sap:creatable="false" sap:updatable="false"
+				sap:deletable="false" sap:pageable="false" sap:content-version="1"/><EntitySet Name="ActionsSet" EntityType="ZMMM_OP_MRF_REQUESTOR_SRV.Actions" sap:creatable="false" sap:updatable="false"
+				sap:deletable="false" sap:pageable="false" sap:addressable="false" sap:content-version="1"/>
+				<AssociationSet Name="MRFHeader_AttachmentSet" Association="ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader_Attachment" sap:creatable="false"
+					sap:updatable="false" sap:deletable="false" sap:content-version="1"><End EntitySet="MRFHeaderSet" Role="FromRole_MRFHeader_Attachment"/><End EntitySet="AttachmentSet" Role="ToRole_MRFHeader_Attachment"/></AssociationSet>
+				<AssociationSet Name="MRFHeader_ItemsSet" Association="ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader_Items" sap:creatable="false"
+					sap:updatable="false" sap:deletable="false" sap:content-version="1"><End EntitySet="MRFHeaderSet" Role="FromRole_MRFHeader_Items"/><End EntitySet="MRFItemSet" Role="ToRole_MRFHeader_Items"/></AssociationSet>
+				<AssociationSet Name="MRFHeader_ApproverSet" Association="ZMMM_OP_MRF_REQUESTOR_SRV.MRFHeader_Approver" sap:creatable="false"
+					sap:updatable="false" sap:deletable="false" sap:content-version="1"><End EntitySet="MRFHeaderSet" Role="FromRole_MRFHeader_Approver"/><End EntitySet="ApproversSet" Role="ToRole_MRFHeader_Approver"/></AssociationSet>
+			</EntityContainer><atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="self" href="./sap/ZMMM_OP_MRF_REQUESTOR_SRV/$metadata"/><atom:link xmlns:atom="http://www.w3.org/2005/Atom" rel="latest-version" href="./sap/ZMMM_OP_MRF_REQUESTOR_SRV/$metadata"/></Schema>
+	</edmx:DataServices>
+</edmx:Edmx>

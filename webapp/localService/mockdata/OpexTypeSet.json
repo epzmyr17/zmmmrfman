@@ -1,0 +1,13 @@
+[{
+	"Mandt": "1000",
+	"Id": "CC",
+	"Type": "Cost Center"
+}, {
+	"Mandt": "2000",
+	"Id": "IO",
+	"Type": "IO Number"
+}, {
+	"Mandt": "3000",
+	"Id": "SUBS",
+	"Type": "Subsidy"
+}]
